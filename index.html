@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>焦点距離・画角・等価F値計算器</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page-bg: #f3f5f7;
+      --panel-bg: #ffffff;
+      --text: #202124;
+      --muted: #5f6368;
+      --line: #c8ccd0;
+      --accent: #1769aa;
+      --accent-strong: #0d4f82;
+      --input-bg: #ffffff;
+      --readonly-bg: #f1f3f4;
+      --warning-bg: #fff8e1;
+      --warning-line: #e0a800;
+      --error-bg: #fdecea;
+      --error-line: #c62828;
+      --success: #147d3f;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page-bg: #17191c;
+        --panel-bg: #22252a;
+        --text: #f1f3f4;
+        --muted: #bdc1c6;
+        --line: #555b63;
+        --accent: #72b7f2;
+        --accent-strong: #9ac9f0;
+        --input-bg: #17191c;
+        --readonly-bg: #30343a;
+        --warning-bg: #3a3218;
+        --warning-line: #d9a514;
+        --error-bg: #3b2020;
+        --error-line: #ef6c6c;
+        --success: #72d59a;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      color: var(--text);
+      background: var(--page-bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans JP", sans-serif;
+      line-height: 1.55;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.55rem, 4vw, 2.2rem);
+      text-align: center;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    h3 {
+      margin: 24px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--line);
+      font-size: 1rem;
+    }
+
+    .lead,
+    .small-note {
+      color: var(--muted);
+    }
+
+    .lead {
+      margin: 0 auto 20px;
+      max-width: 920px;
+      text-align: center;
+    }
+
+    .toolbar,
+    .panel,
+    .notes {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-bg);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 14px;
+    }
+
+    .toolbar .field {
+      flex: 1 1 300px;
+      margin: 0;
+    }
+
+    .button-group {
+      display: flex;
+      flex: 1 1 460px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    button {
+      min-height: 40px;
+      padding: 8px 13px;
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      color: var(--accent-strong);
+      background: transparent;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover { background: rgb(23 105 170 / 10%); }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid rgb(23 105 170 / 25%);
+      outline-offset: 1px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 16px;
+      color: #ffffff;
+      background: var(--accent-strong);
+    }
+
+    .panel-header p {
+      margin: 3px 0 0;
+      opacity: 0.9;
+      font-size: 0.9rem;
+    }
+
+    .panel-body { padding: 14px 16px 18px; }
+
+    .main-input-section {
+      margin: 2px 0 18px;
+      padding: 14px;
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      background: var(--primary-input-bg);
+    }
+
+    .main-input-section h3 {
+      margin: 0 0 10px;
+      border: 0;
+      color: var(--accent-strong);
+      font-size: 1.03rem;
+    }
+
+    .main-input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .main-input-item {
+      min-width: 0;
+    }
+
+    .main-input-item.wide {
+      grid-column: 1 / -1;
+    }
+
+    .main-input-item label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 750;
+    }
+
+    .main-input-item input,
+    .main-input-item select {
+      min-height: 46px;
+      border-width: 2px;
+      font-size: 1rem;
+      font-weight: 650;
+    }
+
+    .format-size-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 8px 0 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--secondary-bg);
+    }
+
+    .format-size-summary strong {
+      white-space: nowrap;
+    }
+
+    .dimension-editor {
+      margin: 8px 0 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--secondary-bg);
+    }
+
+    .dimension-editor .dimension-note {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 0.87rem;
+    }
+
+    .secondary-heading {
+      margin-top: 18px;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: minmax(11rem, 1fr) minmax(9rem, 1.2fr);
+      gap: 10px;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .field label,
+    .field .label {
+      font-weight: 600;
+    }
+
+    .required::after {
+      content: " 必須";
+      color: #c62828;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .control-with-unit {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 38px;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--text);
+      background: var(--input-bg);
+      font: inherit;
+    }
+
+    input[readonly] {
+      background: var(--readonly-bg);
+      cursor: default;
+    }
+
+    input.invalid,
+    select.invalid {
+      border-color: var(--error-line);
+      box-shadow: 0 0 0 2px rgb(198 40 40 / 13%);
+    }
+
+    output {
+      display: block;
+      min-height: 38px;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--readonly-bg);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .primary-results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0 10px;
+    }
+
+    .result-card {
+      min-width: 0;
+      padding: 16px 14px;
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--accent) 7%, var(--panel-bg));
+      text-align: center;
+    }
+
+    .result-card .result-label {
+      display: block;
+      min-height: 2.8em;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .result-card output {
+      display: block;
+      min-height: auto;
+      margin-top: 6px;
+      padding: 0;
+      border: 0;
+      color: var(--accent-strong);
+      background: transparent;
+      font-size: clamp(1.7rem, 4vw, 2.35rem);
+      font-weight: 800;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    details.detail-block {
+      margin-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    details.detail-block > summary {
+      padding: 12px 2px 4px;
+      color: var(--accent-strong);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    details.detail-block[open] > summary {
+      margin-bottom: 4px;
+    }
+
+    .messages {
+      margin: 16px 0;
+    }
+
+    .message {
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-left: 5px solid;
+      border-radius: 5px;
+    }
+
+    .message.warning {
+      border-color: var(--warning-line);
+      background: var(--warning-bg);
+    }
+
+    .message.error {
+      border-color: var(--error-line);
+      background: var(--error-bg);
+    }
+
+    .status {
+      min-height: 1.5em;
+      margin: 7px 0 0;
+      color: var(--success);
+      text-align: right;
+      font-size: 0.9rem;
+    }
+
+    .notes {
+      margin-top: 18px;
+      padding: 14px 18px;
+    }
+
+    .notes h2 { font-size: 1.1rem; }
+    .notes ul { margin: 8px 0 0; padding-left: 1.35rem; }
+    .notes li + li { margin-top: 5px; }
+    .small-note { font-size: 0.87rem; }
+    [hidden] { display: none !important; }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      .button-group { justify-content: flex-start; }
+    }
+
+    @media (max-width: 560px) {
+      .page { width: min(100% - 10px, 1180px); padding-top: 10px; }
+      h1 { font-size: 1.42rem; }
+      .lead { margin-bottom: 12px; font-size: 0.88rem; text-align: left; }
+      .toolbar { padding: 10px; align-items: stretch; }
+      .field { grid-template-columns: 1fr; gap: 4px; margin: 7px 0; }
+      .button-group { display: grid; grid-template-columns: 1fr 1fr; }
+      button { width: 100%; min-height: 38px; padding-inline: 8px; }
+      .panel-header { padding: 11px 12px; }
+      .panel-header h2 { font-size: 1.08rem; }
+      .panel-header p { font-size: 0.8rem; }
+      .panel-body { padding: 10px 11px 14px; }
+      .main-input-section { padding: 10px; margin-bottom: 12px; }
+      .main-input-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .main-input-item.wide { grid-column: 1 / -1; }
+      .main-input-item label { font-size: 0.84rem; }
+      .main-input-item input,
+      .main-input-item select { min-height: 44px; padding: 7px; }
+      .format-size-summary { align-items: flex-start; padding: 8px 9px; font-size: 0.86rem; }
+      .dimension-editor { padding: 8px 9px; }
+      h3 { margin-top: 17px; }
+      .primary-results { gap: 7px; margin-top: 10px; }
+      .result-card { padding: 12px 7px; border-radius: 8px; }
+      .result-card .result-label { min-height: 3.5em; font-size: 0.76rem; }
+      .result-card output { font-size: clamp(1.48rem, 8vw, 2rem); }
+      .small-note { font-size: 0.8rem; }
+      .status { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+<main class="page">
+  <h1>焦点距離・画角・等価F値計算器</h1>
+  <p class="lead">
+    左側のレンズ構成を入力し、右側に換算結果を表示します。
+    必要なレンズ公称焦点距離と、同等の被写界深度となるF値を中心に確認できます。
+  </p>
+
+  <section class="toolbar" aria-label="計算設定と操作">
+    <div class="field">
+      <label for="calcMethod">画角を一致させる基準</label>
+      <select id="calcMethod">
+        <option value="diagonal">対角線方向</option>
+        <option value="long">長辺方向</option>
+        <option value="short">短辺方向</option>
+      </select>
+    </div>
+    <div class="button-group">
+      <button type="button" id="copyUrlButton">条件URLをコピー</button>
+      <button type="button" id="resetButton">初期値に戻す</button>
+    </div>
+  </section>
+
+  <div id="messages" class="messages" aria-live="polite"></div>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="sourceTitle">
+      <header class="panel-header">
+        <h2 id="sourceTitle">入力条件</h2>
+        <p>使用する撮像フォーマット、レンズ、コンバーターを入力</p>
+      </header>
+      <div class="panel-body">
+        <section class="main-input-section" aria-labelledby="mainInputTitle">
+          <h3 id="mainInputTitle">計算の基準となる3項目</h3>
+          <div class="main-input-grid">
+            <div class="main-input-item wide">
+              <label class="required" for="sourceFormat">撮像フォーマット</label>
+              <select id="sourceFormat"></select>
+            </div>
+            <div class="main-input-item">
+              <label class="required" for="sourceFocal">レンズ公称焦点距離</label>
+              <div class="control-with-unit">
+                <input id="sourceFocal" type="number" min="0.01" step="any" inputmode="decimal">
+                <span>mm</span>
+              </div>
+            </div>
+            <div class="main-input-item">
+              <label class="required" for="sourceFStop">レンズ公称F値</label>
+              <input id="sourceFStop" type="number" min="0.01" step="any" inputmode="decimal">
+            </div>
+          </div>
+        </section>
+
+        <div id="sourceSizeSummary" class="format-size-summary">
+          <span>選択フォーマットの使用寸法</span>
+          <strong id="sourceSizeSummaryValue"></strong>
+        </div>
+
+        <section id="sourceDimensionEditor" class="dimension-editor" hidden aria-label="入力側フォーマット寸法">
+          <p id="sourceDimensionNote" class="dimension-note"></p>
+          <div class="field">
+            <label for="sourceX">長辺</label>
+            <div class="control-with-unit">
+              <input id="sourceX" type="number" min="0.01" step="any" inputmode="decimal">
+              <span>mm</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="sourceY">短辺</label>
+            <div class="control-with-unit">
+              <input id="sourceY" type="number" min="0.01" step="any" inputmode="decimal">
+              <span>mm</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="sourceDiagonal">対角線（計算値）</label>
+            <div class="control-with-unit">
+              <input id="sourceDiagonal" type="text" readonly>
+              <span>mm</span>
+            </div>
+          </div>
+        </section>
+
+        <h3 class="secondary-heading">追加の光学条件（任意）</h3>
+        <div class="field">
+          <label for="sourceConverter">コンバーター</label>
+          <select id="sourceConverter"></select>
+        </div>
+        <div class="field" id="sourceCustomRow" hidden>
+          <label class="required" for="sourceCustomFactor">任意倍率</label>
+          <div class="control-with-unit">
+            <input id="sourceCustomFactor" type="number" min="0.01" max="10" step="0.01" inputmode="decimal">
+            <span>×</span>
+          </div>
+        </div>
+
+        <details id="sourceDetails" class="detail-block">
+          <summary>入力構成の計算値・画角を表示</summary>
+          <div class="field">
+            <span class="label">装着後の実効焦点距離</span>
+            <output id="sourceEffectiveFocal"></output>
+          </div>
+          <div class="field">
+            <span class="label">コンバーター装着後の理論F値（露出基準）</span>
+            <output id="sourceExposureFStop"></output>
+          </div>
+          <div class="field">
+            <span class="label">コンバーターによる露出変化</span>
+            <output id="sourceStopChange"></output>
+          </div>
+          <div class="field">
+            <span class="label">対角線画角</span>
+            <output id="sourceAngleDiagonal"></output>
+          </div>
+          <div class="field">
+            <span class="label">長辺画角</span>
+            <output id="sourceAngleLong"></output>
+          </div>
+          <div class="field">
+            <span class="label">短辺画角</span>
+            <output id="sourceAngleShort"></output>
+          </div>
+          <div class="field">
+            <span class="label">35mm判換算焦点距離</span>
+            <output id="sourceEq35Focal"></output>
+          </div>
+          <div class="field">
+            <span class="label">35mm判換算F値（被写界深度相当）</span>
+            <output id="sourceEq35DofFStop"></output>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="targetTitle">
+      <header class="panel-header">
+        <h2 id="targetTitle">換算先フォーマット・計算結果</h2>
+        <p>右側は常に換算結果として表示</p>
+      </header>
+      <div class="panel-body">
+        <section class="main-input-section" aria-labelledby="targetFormatTitle">
+          <h3 id="targetFormatTitle">換算先フォーマット</h3>
+          <div class="main-input-item wide">
+            <label class="required" for="targetFormat">撮像フォーマット</label>
+            <select id="targetFormat"></select>
+          </div>
+        </section>
+
+        <h3>主要結果</h3>
+        <div class="primary-results" aria-label="主要な換算結果">
+          <div class="result-card">
+            <span class="result-label">必要なレンズ<br>公称焦点距離</span>
+            <output id="targetEquivalentFocal" aria-live="polite"></output>
+          </div>
+          <div class="result-card">
+            <span class="result-label">被写界深度を<br>等価にするF値</span>
+            <output id="targetDofFStop" aria-live="polite"></output>
+          </div>
+        </div>
+        <p class="small-note">
+          F値は同じ画角・撮影距離・最終出力条件における被写界深度の換算値で、露出値ではありません。
+        </p>
+
+        <div id="targetSizeSummary" class="format-size-summary">
+          <span>換算に使用するフォーマット寸法</span>
+          <strong id="targetSizeSummaryValue"></strong>
+        </div>
+
+        <section id="targetDimensionEditor" class="dimension-editor" hidden aria-label="換算先フォーマット寸法">
+          <p id="targetDimensionNote" class="dimension-note"></p>
+          <div class="field">
+            <label for="targetX">長辺</label>
+            <div class="control-with-unit">
+              <input id="targetX" type="number" min="0.01" step="any" inputmode="decimal">
+              <span>mm</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="targetY">短辺</label>
+            <div class="control-with-unit">
+              <input id="targetY" type="number" min="0.01" step="any" inputmode="decimal">
+              <span>mm</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="targetDiagonal">対角線（計算値）</label>
+            <div class="control-with-unit">
+              <input id="targetDiagonal" type="text" readonly>
+              <span>mm</span>
+            </div>
+          </div>
+        </section>
+
+        <details id="targetDetails" class="detail-block">
+          <summary>画角・35mm判換算の詳細を表示</summary>
+          <div class="field">
+            <span class="label">対角線画角</span>
+            <output id="targetAngleDiagonal"></output>
+          </div>
+          <div class="field">
+            <span class="label">長辺画角</span>
+            <output id="targetAngleLong"></output>
+          </div>
+          <div class="field">
+            <span class="label">短辺画角</span>
+            <output id="targetAngleShort"></output>
+          </div>
+          <div class="field">
+            <span class="label">35mm判換算焦点距離</span>
+            <output id="targetEq35Focal"></output>
+          </div>
+          <div class="field">
+            <span class="label">35mm判換算F値（被写界深度相当）</span>
+            <output id="targetEq35DofFStop"></output>
+          </div>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <p id="status" class="status" aria-live="polite"></p>
+
+  <section class="notes">
+    <h2>計算値の意味</h2>
+    <ul>
+      <li>
+        <strong>コンバーター装着後の理論F値（露出基準）</strong>は、公称F値にコンバーター倍率を掛けた値です。
+        同じシャッター速度・ISO・被写体輝度であれば、センサーサイズにかかわらず単位面積当たりの像面照度を比較する基準になります。
+        実際の透過損失を示すT値、周辺減光、センサー全体で受ける総光量は考慮していません。
+      </li>
+      <li>
+        <strong>被写界深度相当F値</strong>は、同じ画角、同じ撮影距離、同じ最終出力サイズ・観察条件を前提とし、
+        許容錯乱円が選択した画角基準の画面寸法に比例するとして算出します。露出を示す値ではなく、
+        このF値へ実際に絞る場合は、同じ明るさにするためシャッター速度またはISOの調整が必要です。
+      </li>
+      <li>
+        <strong>35mm判換算</strong>は一般的な対角線基準です。上部で長辺・短辺基準を選んだ場合でも、
+        35mm判換算値だけは対角線基準で表示します。
+      </li>
+      <li>
+        アスペクト比が異なるフォーマット同士では、対角線・長辺・短辺の画角を同時には一致させられません。
+      </li>
+      <li>
+        一覧の寸法は公称値・有効撮像範囲・代表値を併記しています。「1/2.8型」などの型表記は撮像管由来の光学フォーマット名で、実際の対角寸法ではありません。同じ型でも製品や読出しモードで有効範囲が異なります。
+        長辺・短辺を編集できるのは「代表値」または「カスタム寸法」を選んだ場合だけです。
+      </li>
+    </ul>
+    <p class="small-note">
+      このページはオリジナルページへ接続できない場合の代替として用意された計算ツールです。
+    </p>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const FULL_FRAME_DIAGONAL = Math.hypot(36, 24);
+
+  const FORMATS = [
+    { group: '基準・中判・大判', id: 'ff35', name: '35mm ライカ判', x: 36, y: 24 },
+    { group: '基準・中判・大判', id: '645', name: 'ブローニー 6×4.5', x: 56, y: 41.5 },
+    { group: '基準・中判・大判', id: '66', name: 'ブローニー 6×6', x: 56, y: 56 },
+    { group: '基準・中判・大判', id: '67', name: 'ブローニー 6×7', x: 69, y: 56 },
+    { group: '基準・中判・大判', id: '68', name: 'ブローニー 6×8', x: 76, y: 56 },
+    { group: '基準・中判・大判', id: '69', name: 'ブローニー 6×9', x: 82.6, y: 56 },
+    { group: '基準・中判・大判', id: '4x5', name: '4×5インチ', x: 120, y: 95 },
+    { group: '基準・中判・大判', id: '5x7', name: '5×7インチ', x: 170, y: 121 },
+    { group: '基準・中判・大判', id: '8x10', name: '8×10インチ', x: 245, y: 194 },
+
+    { group: 'フィルム・特殊フォーマット', id: 'aps-h-film', name: 'APS H', x: 30.2, y: 16.7, representative: true },
+    { group: 'フィルム・特殊フォーマット', id: 'aps-c-film', name: 'APS C', x: 25, y: 16.7, representative: true },
+    { group: 'フィルム・特殊フォーマット', id: 'aps-p-film', name: 'APS P', x: 30.2, y: 10, representative: true },
+    { group: 'フィルム・特殊フォーマット', id: '126', name: 'インスタマチック（126）', x: 28, y: 28 },
+    { group: 'フィルム・特殊フォーマット', id: '110', name: 'ポケット（110）', x: 17, y: 13 },
+    { group: 'フィルム・特殊フォーマット', id: 'disc', name: 'ディスク', x: 10, y: 8 },
+    { group: 'フィルム・特殊フォーマット', id: 'minox', name: 'ミノックス', x: 11, y: 8 },
+    { group: 'フィルム・特殊フォーマット', id: '35-pano', name: '35mm パノラマ', x: 36, y: 12 },
+    { group: 'フィルム・特殊フォーマット', id: '35-half', name: '35mm ハーフ判', x: 24, y: 17 },
+    { group: 'フィルム・特殊フォーマット', id: '35-square', name: '35mm スクエア', x: 24, y: 24 },
+    { group: 'フィルム・特殊フォーマット', id: 'mamiya-6mf', name: 'Mamiya 6MF パノラマ', x: 54, y: 24 },
+    { group: 'フィルム・特殊フォーマット', id: 'xpan', name: 'XPan／TX-1／Mamiya 7 パノラマ', x: 65, y: 24 },
+
+    { group: 'デジタルカメラ', id: 'nikon-dx', name: 'Nikon DX／Fuji S*Pro／EPSON R-D1', x: 23.7, y: 15.6, representative: true },
+    { group: 'デジタルカメラ', id: 'pentax-aps-c', name: 'Pentax DSLR APS-C', x: 23.5, y: 15.7, representative: true },
+    { group: 'デジタルカメラ', id: 'canon-aps-c', name: 'Canon EOS APS-C', x: 22.7, y: 15.1, representative: true },
+    { group: 'デジタルカメラ', id: 'canon-aps-h', name: 'Canon EOS APS-H', x: 28.7, y: 19.1, representative: true },
+    { group: 'デジタルカメラ', id: 'sigma-foveon', name: 'Sigma SD9／SD10', x: 20.7, y: 13.8 },
+    { group: 'デジタルカメラ', id: 'leica-m8', name: 'Leica M8', x: 27, y: 18 },
+    { group: 'デジタルカメラ', id: 'four-thirds', name: 'Four Thirds／Micro Four Thirds', x: 18, y: 13.5, representative: true },
+    { group: 'デジタルカメラ', id: 'gfx', name: 'Pentax 645D／Fujifilm GFX', x: 44, y: 33, representative: true },
+    { group: 'デジタルカメラ', id: 'mamiya-zd', name: 'Mamiya ZD', x: 48, y: 36 },
+    { group: 'デジタルカメラ', id: 'dcs315', name: 'Kodak DCS 315', x: 14, y: 9.3 },
+    { group: 'デジタルカメラ', id: 'dcs330', name: 'Kodak DCS 330', x: 18.1, y: 13.5 },
+    { group: 'デジタルカメラ', id: 'dcs20', name: 'Kodak DCS *20／Canon EOS D2000', x: 22.8, y: 15.5 },
+    { group: 'デジタルカメラ', id: 'dcs60', name: 'Kodak DCS *60／Canon EOS D6000', x: 27.6, y: 18.4 },
+    { group: 'デジタルカメラ', id: 'efs1', name: 'SiliconFilm EFS-1', x: 10.8, y: 8.6 },
+
+    { group: 'インスタント', id: 'joycam', name: 'ポラロイド JOYCAM', x: 73, y: 55 },
+    { group: 'インスタント', id: 'polaroid600', name: 'ポラロイド 600', x: 79, y: 78 },
+    { group: 'インスタント', id: 'spectra', name: 'ポラロイド Spectra', x: 91, y: 72 },
+    { group: 'インスタント', id: 'polaroid80', name: 'ポラロイド 80', x: 86, y: 83 },
+    { group: 'インスタント', id: 'polaroid-standard', name: 'ポラロイド スタンダード', x: 108, y: 85 },
+    { group: 'インスタント', id: 'instax-mini', name: 'チェキ mini', x: 62, y: 46 },
+    { group: 'インスタント', id: 'instax-square', name: 'チェキ square', x: 62, y: 62 },
+    { group: 'インスタント', id: 'instax-wide', name: 'チェキ wide', x: 99, y: 62 },
+
+    { group: 'シネマ', id: 'super35', name: 'Super 35', x: 24.9, y: 18.7, representative: true },
+    { group: 'シネマ', id: 'super16', name: 'Super 16', x: 12.5, y: 7.4, representative: true },
+
+    // Raspberry Pi公式カメラ。寸法は有効撮像範囲を優先。
+    { group: '組み込み・産業用（Raspberry Pi）', id: 'ov5647', name: 'OmniVision OV5647（1/4型・Camera Module 1）', x: 3.76, y: 2.74, sizeNote: '有効撮像範囲' },
+    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx219', name: 'Sony IMX219（1/4型・Camera Module 2）', x: 3.68, y: 2.76, sizeNote: '有効撮像範囲' },
+    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx708', name: 'Sony IMX708（1/2.43型・Camera Module 3）', x: 6.45, y: 3.63, sizeNote: '有効撮像範囲' },
+    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx477', name: 'Sony IMX477（1/2.3型・HQ Camera）', x: 6.287, y: 4.712, sizeNote: '有効撮像範囲' },
+    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx500', name: 'Sony IMX500（1/2.3型・AI Camera）', x: 6.287, y: 4.712, sizeNote: '有効撮像範囲' },
+    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx296', name: 'Sony IMX296（1/2.9型・Global Shutter Camera）', x: 5.02, y: 3.75, sizeNote: '有効画素域概算' },
+
+    // セキュリティ・マシンビジョン等で採用例の多い実センサー。
+    // 「有効画素域概算」は、記録画素数×画素ピッチを基準にした寸法。
+    { group: '組み込み・産業用（実センサー）', id: 'imx900', name: 'Sony IMX900（1/3.1型・Global Shutter）', x: 4.61, y: 3.46, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx179', name: 'Sony IMX179（1/3.2型）', x: 4.57, y: 3.43, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx290', name: 'Sony IMX290（1/2.8型・Full HD）', x: 5.64, y: 3.18, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx462', name: 'Sony IMX462（1/2.8型・Full HD）', x: 5.57, y: 3.13, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx178', name: 'Sony IMX178（1/1.8型・約6.4MP）', x: 7.43, y: 4.99, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx678', name: 'Sony IMX678（1/1.8型・4K）', x: 7.68, y: 4.32, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx585', name: 'Sony IMX585（1/1.2型・4K）', x: 11.14, y: 6.26, sizeNote: '有効画素域概算' },
+    { group: '組み込み・産業用（実センサー）', id: 'imx533', name: 'Sony IMX533（1型・正方形）', x: 11.31, y: 11.31, sizeNote: '有効画素域概算' },
+
+    // 「型」は撮像管由来の光学フォーマット名で、実寸そのものではない。
+    // 同じ型でも製品・アスペクト比・読出しモードにより有効撮像範囲は異なる。
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-6', name: '1/6型センサー（4:3代表）', x: 2.4, y: 1.8, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-5', name: '1/5型センサー（4:3代表）', x: 2.88, y: 2.16, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-4', name: '1/4型センサー（4:3代表）', x: 3.6, y: 2.7, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-3-2', name: '1/3.2型センサー（4:3代表）', x: 4.54, y: 3.42, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-3-1', name: '1/3.1型センサー（4:3代表）', x: 4.65, y: 3.49, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-3', name: '1/3型センサー（4:3代表）', x: 4.8, y: 3.6, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-9', name: '1/2.9型センサー（4:3代表）', x: 5.04, y: 3.78, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-8', name: '1/2.8型センサー（16:9代表）', x: 5.6, y: 3.15, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-5', name: '1/2.5型センサー（4:3代表）', x: 5.76, y: 4.29, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-3', name: '1/2.3型センサー（4:3代表）', x: 6.17, y: 4.55, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2', name: '1/2型センサー（4:3代表）', x: 6.4, y: 4.8, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1-8', name: '1/1.8型センサー（4:3代表）', x: 7.2, y: 5.4, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1-7', name: '1/1.7型センサー（4:3代表）', x: 7.6, y: 5.7, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-2-3', name: '2/3型センサー（4:3代表）', x: 8.8, y: 6.6, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1-2', name: '1/1.2型センサー（16:9代表）', x: 11.1, y: 6.2, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1', name: '1型センサー（3:2代表）', x: 13.2, y: 8.8, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1', name: '1.1型センサー（4:3代表）', x: 12.8, y: 9.6, representative: true },
+    { group: '組み込み・産業用（代表フォーマット）', id: 'type-4-3-industrial', name: '4/3型センサー（4:3代表）', x: 17.3, y: 13.0, representative: true },
+
+    { group: 'カスタム', id: 'custom', name: 'カスタム寸法', x: null, y: null }
+  ];
+
+  const CONVERTERS = [
+    { id: 'none', name: '無し（1.0×）', factor: 1 },
+    { id: 'metabones-xl', name: 'Metabones XL（0.64×）', factor: 0.64 },
+    { id: 'metabones-071', name: 'Metabones（0.71×）', factor: 0.71 },
+    { id: 'fringer-fr-fx071', name: 'Fringer FR-FX071（0.74×）', factor: 0.74 },
+    { id: 'tele-14', name: 'テレコンバーター（1.4×）', factor: 1.4 },
+    { id: 'tele-16', name: 'テレコンバーター（1.6×）', factor: 1.6 },
+    { id: 'tele-20', name: 'テレコンバーター（2.0×）', factor: 2.0 },
+    { id: 'tele-30', name: 'テレコンバーター（3.0×）', factor: 3.0 },
+    { id: 'custom', name: '任意倍率', factor: null }
+  ];
+
+  const DEFAULTS = {
+    method: 'diagonal',
+    sourceFormat: 'ff35',
+    sourceX: 36,
+    sourceY: 24,
+    sourceFocal: 50,
+    sourceFStop: 2.8,
+    sourceConverter: 'none',
+    sourceCustomFactor: 1,
+    targetFormat: 'ff35',
+    targetX: 36,
+    targetY: 24
+  };
+
+  const $ = id => document.getElementById(id);
+
+  const elements = {
+    calcMethod: $('calcMethod'),
+    sourceFormat: $('sourceFormat'),
+    sourceX: $('sourceX'),
+    sourceY: $('sourceY'),
+    sourceDiagonal: $('sourceDiagonal'),
+    sourceFocal: $('sourceFocal'),
+    sourceFStop: $('sourceFStop'),
+    sourceConverter: $('sourceConverter'),
+    sourceCustomFactor: $('sourceCustomFactor'),
+    sourceCustomRow: $('sourceCustomRow'),
+    sourceSizeSummary: $('sourceSizeSummary'),
+    sourceSizeSummaryValue: $('sourceSizeSummaryValue'),
+    sourceDimensionEditor: $('sourceDimensionEditor'),
+    sourceDimensionNote: $('sourceDimensionNote'),
+    targetFormat: $('targetFormat'),
+    targetX: $('targetX'),
+    targetY: $('targetY'),
+    targetDiagonal: $('targetDiagonal'),
+    targetSizeSummary: $('targetSizeSummary'),
+    targetSizeSummaryValue: $('targetSizeSummaryValue'),
+    targetDimensionEditor: $('targetDimensionEditor'),
+    targetDimensionNote: $('targetDimensionNote'),
+    messages: $('messages'),
+    status: $('status')
+  };
+
+  let statusTimer = null;
+
+  function formatPlain(value, digits = 2) {
+    if (!Number.isFinite(value)) return '';
+    return value.toFixed(digits).replace(/\.?0+$/, '');
+  }
+
+  function formatValue(value, unit = '', digits = 2) {
+    if (!Number.isFinite(value)) return '—';
+    return `${formatPlain(value, digits)}${unit ? ` ${unit}` : ''}`;
+  }
+
+  function angle(width, focalLength) {
+    return 2 * Math.atan(width / (2 * focalLength)) * 180 / Math.PI;
+  }
+
+  function setOutput(id, value, unit = '', digits = 2) {
+    $(id).textContent = formatValue(value, unit, digits);
+  }
+
+  function clearOutputs() {
+    [
+      'sourceEffectiveFocal', 'sourceExposureFStop', 'sourceStopChange',
+      'sourceAngleDiagonal', 'sourceAngleLong', 'sourceAngleShort',
+      'sourceEq35Focal', 'sourceEq35DofFStop',
+      'targetEquivalentFocal', 'targetDofFStop',
+      'targetAngleDiagonal', 'targetAngleLong', 'targetAngleShort',
+      'targetEq35Focal', 'targetEq35DofFStop'
+    ].forEach(id => { $(id).textContent = '—'; });
+  }
+
+  function populateFormatSelect(select) {
+    select.textContent = '';
+    const groups = new Map();
+
+    for (const format of FORMATS) {
+      if (!groups.has(format.group)) {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = format.group;
+        groups.set(format.group, optgroup);
+        select.appendChild(optgroup);
+      }
+
+      const option = document.createElement('option');
+      option.value = format.id;
+      if (format.id === 'custom') {
+        option.textContent = format.name;
+      } else {
+        const sizeNote = format.sizeNote
+          ? `・${format.sizeNote}`
+          : (format.representative ? '・代表値' : '');
+        option.textContent = `${format.name}（${format.x}×${format.y} mm${sizeNote}）`;
+      }
+      groups.get(format.group).appendChild(option);
+    }
+  }
+
+  function populateConverterSelect(select) {
+    select.textContent = '';
+    for (const converter of CONVERTERS) {
+      const option = document.createElement('option');
+      option.value = converter.id;
+      option.textContent = converter.name;
+      select.appendChild(option);
+    }
+  }
+
+  function getFormat(id) {
+    return FORMATS.find(item => item.id === id) || FORMATS[0];
+  }
+
+  function getConverter(id) {
+    return CONVERTERS.find(item => item.id === id) || CONVERTERS[0];
+  }
+
+  function formatAllowsDimensionEdit(format) {
+    return format.id === 'custom' || format.representative === true;
+  }
+
+  function applyFormat(select, xInput, yInput) {
+    const format = getFormat(select.value);
+    if (format.id !== 'custom') {
+      xInput.value = format.x;
+      yInput.value = format.y;
+    }
+  }
+
+  function updateDimensionUi(select, xInput, yInput, summary, summaryValue, editor, note) {
+    const format = getFormat(select.value);
+    const editable = formatAllowsDimensionEdit(format);
+    const x = Number(xInput.value);
+    const y = Number(yInput.value);
+    const diag = Number.isFinite(x) && Number.isFinite(y) ? Math.hypot(x, y) : NaN;
+
+    summary.hidden = editable;
+    editor.hidden = !editable;
+    xInput.readOnly = !editable;
+    yInput.readOnly = !editable;
+
+    if (editable) {
+      note.textContent = format.id === 'custom'
+        ? '長辺・短辺を入力してください。対角線は自動計算されます。'
+        : 'この項目は代表寸法です。機器の実測値・仕様値が分かる場合は修正できます。';
+    } else {
+      summaryValue.textContent = Number.isFinite(diag)
+        ? `${formatPlain(x, 3)} × ${formatPlain(y, 3)} mm（対角 ${formatPlain(diag, 3)} mm）`
+        : '—';
+    }
+  }
+
+  function updateDimensionEditors() {
+    updateDimensionUi(
+      elements.sourceFormat, elements.sourceX, elements.sourceY,
+      elements.sourceSizeSummary, elements.sourceSizeSummaryValue,
+      elements.sourceDimensionEditor, elements.sourceDimensionNote
+    );
+    updateDimensionUi(
+      elements.targetFormat, elements.targetX, elements.targetY,
+      elements.targetSizeSummary, elements.targetSizeSummaryValue,
+      elements.targetDimensionEditor, elements.targetDimensionNote
+    );
+  }
+
+  function updateCustomRows() {
+    const sourceCustom = elements.sourceConverter.value === 'custom';
+    elements.sourceCustomRow.hidden = !sourceCustom;
+    elements.sourceCustomFactor.disabled = !sourceCustom;
+  }
+
+  function readPositive(input, label, errors, options = {}) {
+    const value = Number(input.value);
+    const min = options.min ?? 0;
+    const max = options.max ?? Infinity;
+    const valid = Number.isFinite(value) && value > min && value <= max;
+
+    input.classList.toggle('invalid', !valid);
+    input.setAttribute('aria-invalid', String(!valid));
+
+    if (!valid) {
+      const range = Number.isFinite(max)
+        ? `${min}より大きく${max}以下`
+        : `${min}より大きい`;
+      errors.push(`${label}は${range}数値を入力してください。`);
+      return NaN;
+    }
+    return value;
+  }
+
+  function readConverterFactor(select, customInput, label, errors) {
+    const converter = getConverter(select.value);
+    if (converter.id !== 'custom') {
+      customInput.classList.remove('invalid');
+      customInput.setAttribute('aria-invalid', 'false');
+      return converter.factor;
+    }
+    return readPositive(customInput, `${label}の任意倍率`, errors, { min: 0, max: 10 });
+  }
+
+  function stopChangeText(factor) {
+    if (!Number.isFinite(factor) || factor <= 0) return '—';
+    const stops = 2 * Math.log2(factor);
+    if (Math.abs(stops) < 0.005) return '変化なし（0段）';
+    return stops > 0
+      ? `約${formatPlain(stops, 2)}段 暗くなる（理論値）`
+      : `約${formatPlain(Math.abs(stops), 2)}段 明るくなる（理論値）`;
+  }
+
+  function selectedDimensionRatio(method, sx, sy, sdiag, tx, ty, tdiag) {
+    if (method === 'long') return tx / sx;
+    if (method === 'short') return ty / sy;
+    return tdiag / sdiag;
+  }
+
+  function methodLabel(method) {
+    if (method === 'long') return '長辺方向';
+    if (method === 'short') return '短辺方向';
+    return '対角線方向';
+  }
+
+  function renderMessages(errors, warnings) {
+    elements.messages.textContent = '';
+
+    for (const text of errors) {
+      const div = document.createElement('div');
+      div.className = 'message error';
+      div.textContent = text;
+      elements.messages.appendChild(div);
+    }
+
+    for (const text of warnings) {
+      const div = document.createElement('div');
+      div.className = 'message warning';
+      div.textContent = text;
+      elements.messages.appendChild(div);
+    }
+  }
+
+  function setStatus(text) {
+    clearTimeout(statusTimer);
+    elements.status.textContent = text;
+    if (text) {
+      statusTimer = setTimeout(() => {
+        elements.status.textContent = '';
+      }, 5000);
+    }
+  }
+
+  function calculate({ updateUrl = true } = {}) {
+    updateCustomRows();
+    updateDimensionEditors();
+
+    const errors = [];
+    const warnings = [];
+
+    const sx = readPositive(elements.sourceX, '入力側の長辺', errors);
+    const sy = readPositive(elements.sourceY, '入力側の短辺', errors);
+    const sourceFocal = readPositive(elements.sourceFocal, 'レンズ公称焦点距離', errors);
+    const sourceFStop = readPositive(elements.sourceFStop, 'レンズ公称F値', errors);
+    const sourceFactor = readConverterFactor(
+      elements.sourceConverter,
+      elements.sourceCustomFactor,
+      '入力側コンバーター',
+      errors
+    );
+
+    const tx = readPositive(elements.targetX, '換算先の長辺', errors);
+    const ty = readPositive(elements.targetY, '換算先の短辺', errors);
+
+    const sourceDiagonal = Number.isFinite(sx) && Number.isFinite(sy)
+      ? Math.hypot(sx, sy)
+      : NaN;
+    const targetDiagonal = Number.isFinite(tx) && Number.isFinite(ty)
+      ? Math.hypot(tx, ty)
+      : NaN;
+
+    elements.sourceDiagonal.value = formatPlain(sourceDiagonal, 3);
+    elements.targetDiagonal.value = formatPlain(targetDiagonal, 3);
+
+    if (errors.length) {
+      clearOutputs();
+      renderMessages(errors, warnings);
+      return;
+    }
+
+    const method = elements.calcMethod.value;
+    const ratio = selectedDimensionRatio(
+      method, sx, sy, sourceDiagonal, tx, ty, targetDiagonal
+    );
+
+    const sourceAspect = sx / sy;
+    const targetAspect = tx / ty;
+    const aspectDifference = Math.abs(sourceAspect - targetAspect) / sourceAspect;
+    if (aspectDifference > 0.001) {
+      warnings.push(
+        `アスペクト比が異なります（入力 ${formatPlain(sourceAspect, 3)}:1、` +
+        `換算先 ${formatPlain(targetAspect, 3)}:1）。${methodLabel(method)}の画角だけを一致させるため、` +
+        '他方向の画角と写る範囲は一致しません。'
+      );
+    }
+
+    const sourceEffectiveFocal = sourceFocal * sourceFactor;
+    const sourceExposureFStop = sourceFStop * sourceFactor;
+
+    const targetEquivalentFocal = sourceEffectiveFocal * ratio;
+
+    // 同一画角・同一撮影距離・同一出力条件で、許容錯乱円が
+    // 選択した画面寸法に比例すると仮定した被写界深度相当F値。
+    // 露出値ではないため、換算先に露出用F値は重複表示しない。
+    const targetDofFStop = sourceExposureFStop * ratio;
+
+    const sourceCrop35 = FULL_FRAME_DIAGONAL / sourceDiagonal;
+    const targetCrop35 = FULL_FRAME_DIAGONAL / targetDiagonal;
+
+    const sourceEq35Focal = sourceEffectiveFocal * sourceCrop35;
+    const sourceEq35DofFStop = sourceExposureFStop * sourceCrop35;
+    const targetEq35Focal = targetEquivalentFocal * targetCrop35;
+    const targetEq35DofFStop = targetDofFStop * targetCrop35;
+
+    setOutput('sourceEffectiveFocal', sourceEffectiveFocal, 'mm');
+    setOutput('sourceExposureFStop', sourceExposureFStop, '', 2);
+    $('sourceStopChange').textContent = stopChangeText(sourceFactor);
+    setOutput('sourceAngleDiagonal', angle(sourceDiagonal, sourceEffectiveFocal), '°');
+    setOutput('sourceAngleLong', angle(sx, sourceEffectiveFocal), '°');
+    setOutput('sourceAngleShort', angle(sy, sourceEffectiveFocal), '°');
+    setOutput('sourceEq35Focal', sourceEq35Focal, 'mm');
+    setOutput('sourceEq35DofFStop', sourceEq35DofFStop, '', 2);
+
+    setOutput('targetEquivalentFocal', targetEquivalentFocal, 'mm');
+    setOutput('targetDofFStop', targetDofFStop, '', 2);
+    setOutput('targetAngleDiagonal', angle(targetDiagonal, targetEquivalentFocal), '°');
+    setOutput('targetAngleLong', angle(tx, targetEquivalentFocal), '°');
+    setOutput('targetAngleShort', angle(ty, targetEquivalentFocal), '°');
+    setOutput('targetEq35Focal', targetEq35Focal, 'mm');
+    setOutput('targetEq35DofFStop', targetEq35DofFStop, '', 2);
+
+    renderMessages(errors, warnings);
+
+    if (updateUrl) updateAddressBar();
+  }
+
+  function buildParams() {
+    const params = new URLSearchParams();
+    params.set('m', elements.calcMethod.value);
+    params.set('sf', elements.sourceFormat.value);
+    if (formatAllowsDimensionEdit(getFormat(elements.sourceFormat.value))) {
+      params.set('sx', elements.sourceX.value);
+      params.set('sy', elements.sourceY.value);
+    }
+    params.set('fl', elements.sourceFocal.value);
+    params.set('fn', elements.sourceFStop.value);
+    params.set('sc', elements.sourceConverter.value);
+    if (elements.sourceConverter.value === 'custom') {
+      params.set('scf', elements.sourceCustomFactor.value);
+    }
+    params.set('tf', elements.targetFormat.value);
+    if (formatAllowsDimensionEdit(getFormat(elements.targetFormat.value))) {
+      params.set('tx', elements.targetX.value);
+      params.set('ty', elements.targetY.value);
+    }
+    return params;
+  }
+
+  function buildShareUrl() {
+    const url = new URL(window.location.href);
+    url.search = buildParams().toString();
+    url.hash = '';
+    return url.toString();
+  }
+
+  function updateAddressBar() {
+    try {
+      const url = new URL(window.location.href);
+      url.search = buildParams().toString();
+      url.hash = '';
+      window.history.replaceState(null, '', url.toString());
+    } catch (_) {
+      // file:// など、履歴APIを利用できない環境では何もしない。
+    }
+  }
+
+  async function copyShareUrl() {
+    const url = buildShareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      setStatus('現在の条件を含むURLをコピーしました。');
+      return;
+    } catch (_) {
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand('copy');
+      textarea.remove();
+      setStatus(copied
+        ? '現在の条件を含むURLをコピーしました。'
+        : 'URLをコピーできませんでした。アドレス欄からコピーしてください。');
+    }
+  }
+
+  function setConverter(select, customInput, id, customFactor) {
+    const exists = CONVERTERS.some(item => item.id === id);
+    select.value = exists ? id : 'none';
+    customInput.value = Number.isFinite(Number(customFactor))
+      ? customFactor
+      : 1;
+  }
+
+  function setState(state, { calculateNow = true } = {}) {
+    elements.calcMethod.value = state.method;
+
+    elements.sourceFormat.value = state.sourceFormat;
+    const sourceFormatData = getFormat(state.sourceFormat);
+    elements.sourceX.value = formatAllowsDimensionEdit(sourceFormatData)
+      ? state.sourceX
+      : sourceFormatData.x;
+    elements.sourceY.value = formatAllowsDimensionEdit(sourceFormatData)
+      ? state.sourceY
+      : sourceFormatData.y;
+    elements.sourceFocal.value = state.sourceFocal;
+    elements.sourceFStop.value = state.sourceFStop;
+    setConverter(
+      elements.sourceConverter,
+      elements.sourceCustomFactor,
+      state.sourceConverter,
+      state.sourceCustomFactor
+    );
+
+    elements.targetFormat.value = state.targetFormat;
+    const targetFormatData = getFormat(state.targetFormat);
+    elements.targetX.value = formatAllowsDimensionEdit(targetFormatData)
+      ? state.targetX
+      : targetFormatData.x;
+    elements.targetY.value = formatAllowsDimensionEdit(targetFormatData)
+      ? state.targetY
+      : targetFormatData.y;
+
+    updateCustomRows();
+    updateDimensionEditors();
+    if (calculateNow) calculate();
+  }
+
+  function reset() {
+    setState(DEFAULTS);
+    setStatus('初期値に戻しました。');
+  }
+
+  function numberParam(params, key, fallback) {
+    const raw = params.get(key);
+    if (raw === null || raw.trim() === '') return fallback;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  function enumParam(params, key, allowed, fallback) {
+    const value = params.get(key);
+    return value && allowed.includes(value) ? value : fallback;
+  }
+
+  function loadFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    if ([...params.keys()].length === 0) {
+      setState(DEFAULTS, { calculateNow: false });
+      return;
+    }
+
+    const formatIds = FORMATS.map(item => item.id);
+    const converterIds = CONVERTERS.map(item => item.id);
+    const methodIds = ['diagonal', 'long', 'short'];
+
+    const sourceFormat = enumParam(params, 'sf', formatIds, DEFAULTS.sourceFormat);
+    const targetFormat = enumParam(params, 'tf', formatIds, DEFAULTS.targetFormat);
+    const sourceFormatData = getFormat(sourceFormat);
+    const targetFormatData = getFormat(targetFormat);
+
+    setState({
+      method: enumParam(params, 'm', methodIds, DEFAULTS.method),
+      sourceFormat,
+      sourceX: formatAllowsDimensionEdit(sourceFormatData)
+        ? numberParam(params, 'sx', sourceFormatData.x ?? DEFAULTS.sourceX)
+        : sourceFormatData.x,
+      sourceY: formatAllowsDimensionEdit(sourceFormatData)
+        ? numberParam(params, 'sy', sourceFormatData.y ?? DEFAULTS.sourceY)
+        : sourceFormatData.y,
+      sourceFocal: numberParam(params, 'fl', DEFAULTS.sourceFocal),
+      sourceFStop: numberParam(params, 'fn', DEFAULTS.sourceFStop),
+      sourceConverter: enumParam(params, 'sc', converterIds, DEFAULTS.sourceConverter),
+      sourceCustomFactor: numberParam(params, 'scf', DEFAULTS.sourceCustomFactor),
+      targetFormat,
+      targetX: formatAllowsDimensionEdit(targetFormatData)
+        ? numberParam(params, 'tx', targetFormatData.x ?? DEFAULTS.targetX)
+        : targetFormatData.x,
+      targetY: formatAllowsDimensionEdit(targetFormatData)
+        ? numberParam(params, 'ty', targetFormatData.y ?? DEFAULTS.targetY)
+        : targetFormatData.y
+    }, { calculateNow: false });
+  }
+
+  function wireEvents() {
+    elements.calcMethod.addEventListener('change', () => calculate());
+
+    elements.sourceFormat.addEventListener('change', () => {
+      applyFormat(elements.sourceFormat, elements.sourceX, elements.sourceY);
+      calculate();
+    });
+    elements.targetFormat.addEventListener('change', () => {
+      applyFormat(elements.targetFormat, elements.targetX, elements.targetY);
+      calculate();
+    });
+
+    [elements.sourceX, elements.sourceY].forEach(input => {
+      input.addEventListener('input', () => calculate());
+    });
+    [elements.targetX, elements.targetY].forEach(input => {
+      input.addEventListener('input', () => calculate());
+    });
+
+    [elements.sourceFocal, elements.sourceFStop].forEach(input => {
+      input.addEventListener('input', () => calculate());
+    });
+
+    elements.sourceConverter.addEventListener('change', () => calculate());
+    elements.sourceCustomFactor.addEventListener('input', () => calculate());
+
+    $('copyUrlButton').addEventListener('click', copyShareUrl);
+    $('resetButton').addEventListener('click', reset);
+  }
+
+  function setInitialDetailState() {
+    $('sourceDetails').open = false;
+    $('targetDetails').open = false;
+  }
+
+  function initialize() {
+    populateFormatSelect(elements.sourceFormat);
+    populateFormatSelect(elements.targetFormat);
+    populateConverterSelect(elements.sourceConverter);
+    loadFromUrl();
+    setInitialDetailState();
+    wireEvents();
+    calculate();
+  }
+
+  window.addEventListener('DOMContentLoaded', initialize);
+})();
+</script>
+</body>
+</html>
