@@ -599,11 +599,11 @@
         <h3>主要結果</h3>
         <div class="primary-results" aria-label="主要な換算結果">
           <div class="result-card">
-            <span class="result-label">必要なレンズ<br>公称焦点距離</span>
+            <label class="result-label" for="targetEquivalentFocal">必要なレンズ<br>公称焦点距離</label>
             <output id="targetEquivalentFocal" aria-live="polite"></output>
           </div>
           <div class="result-card">
-            <span class="result-label">被写界深度を<br>等価にするF値</span>
+            <label class="result-label" for="targetDofFStop">被写界深度を<br>等価にするF値</label>
             <output id="targetDofFStop" aria-live="polite"></output>
           </div>
         </div>
@@ -1054,10 +1054,12 @@
 
   function setStatus(text) {
     clearTimeout(statusTimer);
+    statusTimer = null;
     elements.status.textContent = text;
     if (text) {
       statusTimer = setTimeout(() => {
         elements.status.textContent = '';
+        statusTimer = null;
       }, 5000);
     }
   }
@@ -1107,7 +1109,7 @@
     const sourceAspect = sx / sy;
     const targetAspect = tx / ty;
     const aspectDifference = Math.abs(sourceAspect - targetAspect) / sourceAspect;
-    if (aspectDifference > 0.001) {
+    if (aspectDifference > 0.01) {
       warnings.push(
         `アスペクト比が異なります（入力 ${formatPlain(sourceAspect, 3)}:1、` +
         `換算先 ${formatPlain(targetAspect, 3)}:1）。${methodLabel(method)}の画角だけを一致させるため、` +
