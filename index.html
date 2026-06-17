@@ -41,6 +41,7 @@
         --error-line: #ef6c6c;
         --success: #72d59a;
       }
+
     }
 
     * { box-sizing: border-box; }
@@ -434,6 +435,17 @@
       .small-note { font-size: 0.8rem; }
       .status { text-align: left; }
     }
+
+    /* 水色のパネル見出しは、ダークモードでも黒文字で可読性を確保。
+       通常定義とモバイル定義より後に置いて、確実に上書きする。 */
+    @media (prefers-color-scheme: dark) {
+      .panel-header,
+      .panel-header h2,
+      .panel-header p {
+        color: #111111;
+      }
+    }
+
   </style>
 </head>
 <body>
