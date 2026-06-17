@@ -1,0 +1,11 @@
+{
+  "name": "focal-length-calc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A static focal length, angle of view, and equivalent aperture calculator page.",
+  "scripts": {
+    "serve": "python3 -m http.server 8000",
+    "test": "test -f index.html"
+  },
+  "license": "Apache-2.0"
+}
