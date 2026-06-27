@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="robots" content="noindex">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>焦点距離・画角・等価F値計算器</title>
+  <title>Focal Length, Angle of View, and Equivalent F-number Calculator</title>
   <style>
     :root {
       color-scheme: light dark;
@@ -271,7 +271,7 @@
     }
 
     .required::after {
-      content: " 必須";
+      content: " required";
       color: #c62828;
       font-size: 0.72rem;
       font-weight: 700;
@@ -488,8 +488,7 @@
       .status { text-align: left; }
     }
 
-    /* 水色のパネル見出しは、ダークモードでも黒文字で可読性を確保。
-       通常定義とモバイル定義より後に置いて、確実に上書きする。 */
+    /* Keep panel headers readable in dark mode. */
     @media (prefers-color-scheme: dark) {
       .panel-header,
       .panel-header h2,
@@ -502,25 +501,25 @@
 </head>
 <body>
 <main class="page">
-  <h1>焦点距離・画角・等価F値計算器</h1>
+  <h1>Focal Length, Angle of View, and Equivalent F-number Calculator</h1>
   <p class="lead">
-    左側のレンズ構成を入力し、右側に換算結果を表示します。
-    必要なレンズ公称焦点距離と、同等の被写界深度となるF値を中心に確認できます。
+    Enter the source lens setup on the left and view converted results on the right.
+    Check the nominal focal length needed for the target format and the F-number that gives comparable depth of field.
   </p>
-  <nav class="language-nav" aria-label="Language switch"><a href="index_us.html">English</a></nav>
+  <nav class="language-nav" aria-label="Language switch"><a href="index.html">日本語</a></nav>
 
-  <section class="toolbar" aria-label="計算設定と操作">
+  <section class="toolbar" aria-label="Calculation settings and actions">
     <div class="field">
-      <label for="calcMethod">画角を一致させる基準</label>
+      <label for="calcMethod">Angle-of-view matching basis</label>
       <select id="calcMethod">
-        <option value="diagonal">対角線方向</option>
-        <option value="long">長辺方向</option>
-        <option value="short">短辺方向</option>
+        <option value="diagonal">Diagonal</option>
+        <option value="long">Long side</option>
+        <option value="short">Short side</option>
       </select>
     </div>
     <div class="button-group">
-      <button type="button" id="copyUrlButton">条件URLをコピー</button>
-      <button type="button" id="resetButton">初期値に戻す</button>
+      <button type="button" id="copyUrlButton">Copy URL with settings</button>
+      <button type="button" id="resetButton">Reset defaults</button>
     </div>
   </section>
 
@@ -529,54 +528,54 @@
   <div class="grid">
     <section class="panel" aria-labelledby="sourceTitle">
       <header class="panel-header">
-        <h2 id="sourceTitle">入力条件</h2>
-        <p>使用する撮像フォーマット、レンズ、コンバーターを入力</p>
+        <h2 id="sourceTitle">Source settings</h2>
+        <p>Enter the image format, lens, and converter in use</p>
       </header>
       <div class="panel-body">
         <section class="main-input-section" aria-labelledby="mainInputTitle">
-          <h3 id="mainInputTitle">計算の基準となる3項目</h3>
+          <h3 id="mainInputTitle">Three required calculation inputs</h3>
           <div class="main-input-grid">
             <div class="main-input-item wide">
-              <label class="required" for="sourceFormat">撮像フォーマット</label>
+              <label class="required" for="sourceFormat">Image format</label>
               <select id="sourceFormat"></select>
             </div>
             <div class="main-input-item">
-              <label class="required" for="sourceFocal">レンズ公称焦点距離</label>
+              <label class="required" for="sourceFocal">Nominal lens focal length</label>
               <div class="control-with-unit">
                 <input id="sourceFocal" type="number" min="0.01" step="any" inputmode="decimal">
                 <span>mm</span>
               </div>
             </div>
             <div class="main-input-item">
-              <label class="required" for="sourceFStop">レンズ公称F値</label>
+              <label class="required" for="sourceFStop">Nominal lens F-number</label>
               <input id="sourceFStop" type="number" min="0.01" step="any" inputmode="decimal">
             </div>
           </div>
         </section>
 
         <div id="sourceSizeSummary" class="format-size-summary">
-          <span>選択フォーマットの使用寸法</span>
+          <span>Selected format dimensions</span>
           <strong id="sourceSizeSummaryValue"></strong>
         </div>
 
-        <section id="sourceDimensionEditor" class="dimension-editor" hidden aria-label="入力側フォーマット寸法">
+        <section id="sourceDimensionEditor" class="dimension-editor" hidden aria-label="Source format dimensions">
           <p id="sourceDimensionNote" class="dimension-note"></p>
           <div class="field">
-            <label for="sourceX">長辺</label>
+            <label for="sourceX">Long side</label>
             <div class="control-with-unit">
               <input id="sourceX" type="number" min="0.01" step="any" inputmode="decimal">
               <span>mm</span>
             </div>
           </div>
           <div class="field">
-            <label for="sourceY">短辺</label>
+            <label for="sourceY">Short side</label>
             <div class="control-with-unit">
               <input id="sourceY" type="number" min="0.01" step="any" inputmode="decimal">
               <span>mm</span>
             </div>
           </div>
           <div class="field">
-            <label for="sourceDiagonal">対角線（計算値）</label>
+            <label for="sourceDiagonal">Diagonal (calculated)</label>
             <div class="control-with-unit">
               <input id="sourceDiagonal" type="text" readonly>
               <span>mm</span>
@@ -584,13 +583,13 @@
           </div>
         </section>
 
-        <h3 class="secondary-heading">追加の光学条件（任意）</h3>
+        <h3 class="secondary-heading">Additional optical settings (optional)</h3>
         <div class="field">
-          <label for="sourceConverter">コンバーター</label>
+          <label for="sourceConverter">Converter</label>
           <select id="sourceConverter"></select>
         </div>
         <div class="field" id="sourceCustomRow" hidden>
-          <label class="required" for="sourceCustomFactor">任意倍率</label>
+          <label class="required" for="sourceCustomFactor">Custom factor</label>
           <div class="control-with-unit">
             <input id="sourceCustomFactor" type="number" min="0.01" max="10" step="0.01" inputmode="decimal">
             <span>×</span>
@@ -598,37 +597,37 @@
         </div>
 
         <details id="sourceDetails" class="detail-block">
-          <summary>入力構成の計算値・画角を表示</summary>
+          <summary>Show calculated values and angles of view for the source setup</summary>
           <div class="field">
-            <span class="label">装着後の実効焦点距離</span>
+            <span class="label">Effective focal length after converter</span>
             <output id="sourceEffectiveFocal"></output>
           </div>
           <div class="field">
-            <span class="label">コンバーター装着後の理論F値（露出基準）</span>
+            <span class="label">Theoretical F-number after converter (exposure basis)</span>
             <output id="sourceExposureFStop"></output>
           </div>
           <div class="field">
-            <span class="label">コンバーターによる露出変化</span>
+            <span class="label">Exposure change from converter</span>
             <output id="sourceStopChange"></output>
           </div>
           <div class="field">
-            <span class="label">対角線画角</span>
+            <span class="label">Diagonal angle of view</span>
             <output id="sourceAngleDiagonal"></output>
           </div>
           <div class="field">
-            <span class="label">長辺画角</span>
+            <span class="label">Long-side angle of view</span>
             <output id="sourceAngleLong"></output>
           </div>
           <div class="field">
-            <span class="label">短辺画角</span>
+            <span class="label">Short-side angle of view</span>
             <output id="sourceAngleShort"></output>
           </div>
           <div class="field">
-            <span class="label">35mm判換算焦点距離</span>
+            <span class="label">35mm-equivalent focal length</span>
             <output id="sourceEq35Focal"></output>
           </div>
           <div class="field">
-            <span class="label">35mm判換算F値（被写界深度相当）</span>
+            <span class="label">35mm-equivalent F-number (depth-of-field equivalent)</span>
             <output id="sourceEq35DofFStop"></output>
           </div>
         </details>
@@ -637,56 +636,56 @@
 
     <section class="panel" aria-labelledby="targetTitle">
       <header class="panel-header">
-        <h2 id="targetTitle">換算先フォーマット・計算結果</h2>
-        <p>右側は常に換算結果として表示</p>
+        <h2 id="targetTitle">Target format and results</h2>
+        <p>The right side always shows converted results</p>
       </header>
       <div class="panel-body">
         <section class="main-input-section" aria-labelledby="targetFormatTitle">
-          <h3 id="targetFormatTitle">換算先フォーマット</h3>
+          <h3 id="targetFormatTitle">Target format</h3>
           <div class="main-input-item wide">
-            <label class="required" for="targetFormat">撮像フォーマット</label>
+            <label class="required" for="targetFormat">Image format</label>
             <select id="targetFormat"></select>
           </div>
         </section>
 
-        <h3>主要結果</h3>
-        <div class="primary-results" aria-label="主要な換算結果">
+        <h3>Main results</h3>
+        <div class="primary-results" aria-label="Main conversion results">
           <div class="result-card">
-            <label class="result-label" for="targetEquivalentFocal">必要なレンズ<br>公称焦点距離</label>
+            <label class="result-label" for="targetEquivalentFocal">Required nominal<br>lens focal length</label>
             <output id="targetEquivalentFocal" aria-live="polite"></output>
           </div>
           <div class="result-card">
-            <label class="result-label" for="targetDofFStop">被写界深度を<br>等価にするF値</label>
+            <label class="result-label" for="targetDofFStop">F-number for<br>equivalent depth of field</label>
             <output id="targetDofFStop" aria-live="polite"></output>
           </div>
         </div>
         <p class="small-note">
-          F値は同じ画角・撮影距離・最終出力条件における被写界深度の換算値で、露出値ではありません。
+          This F-number is a depth-of-field conversion for the same angle of view, shooting distance, and final output conditions; it is not an exposure value.
         </p>
 
         <div id="targetSizeSummary" class="format-size-summary">
-          <span>換算に使用するフォーマット寸法</span>
+          <span>Format dimensions used for conversion</span>
           <strong id="targetSizeSummaryValue"></strong>
         </div>
 
-        <section id="targetDimensionEditor" class="dimension-editor" hidden aria-label="換算先フォーマット寸法">
+        <section id="targetDimensionEditor" class="dimension-editor" hidden aria-label="Target format dimensions">
           <p id="targetDimensionNote" class="dimension-note"></p>
           <div class="field">
-            <label for="targetX">長辺</label>
+            <label for="targetX">Long side</label>
             <div class="control-with-unit">
               <input id="targetX" type="number" min="0.01" step="any" inputmode="decimal">
               <span>mm</span>
             </div>
           </div>
           <div class="field">
-            <label for="targetY">短辺</label>
+            <label for="targetY">Short side</label>
             <div class="control-with-unit">
               <input id="targetY" type="number" min="0.01" step="any" inputmode="decimal">
               <span>mm</span>
             </div>
           </div>
           <div class="field">
-            <label for="targetDiagonal">対角線（計算値）</label>
+            <label for="targetDiagonal">Diagonal (calculated)</label>
             <div class="control-with-unit">
               <input id="targetDiagonal" type="text" readonly>
               <span>mm</span>
@@ -695,25 +694,25 @@
         </section>
 
         <details id="targetDetails" class="detail-block">
-          <summary>画角・35mm判換算の詳細を表示</summary>
+          <summary>Show angle-of-view and 35mm-equivalent details</summary>
           <div class="field">
-            <span class="label">対角線画角</span>
+            <span class="label">Diagonal angle of view</span>
             <output id="targetAngleDiagonal"></output>
           </div>
           <div class="field">
-            <span class="label">長辺画角</span>
+            <span class="label">Long-side angle of view</span>
             <output id="targetAngleLong"></output>
           </div>
           <div class="field">
-            <span class="label">短辺画角</span>
+            <span class="label">Short-side angle of view</span>
             <output id="targetAngleShort"></output>
           </div>
           <div class="field">
-            <span class="label">35mm判換算焦点距離</span>
+            <span class="label">35mm-equivalent focal length</span>
             <output id="targetEq35Focal"></output>
           </div>
           <div class="field">
-            <span class="label">35mm判換算F値（被写界深度相当）</span>
+            <span class="label">35mm-equivalent F-number (depth-of-field equivalent)</span>
             <output id="targetEq35DofFStop"></output>
           </div>
         </details>
@@ -725,107 +724,33 @@
 
 
   <details class="notes philosophy">
-    <summary>このツールの考え方</summary>
+    <summary>How this tool works</summary>
     <div class="philosophy-body">
-      <h3>撮像フォーマットと画角について</h3>
-      <p>
-        レンズが作る像には、像を正常に結ぶことのできる範囲である「イメージサークル」があります。
-        撮像フォーマットの違いは、基本的にはその像のどの範囲をセンサーやフィルムで記録するかの違いです。
-      </p>
-      <p>
-        同じレンズを同じ位置から使用した場合、小さい撮像フォーマットでは、イメージサークルの中央部分を小さく切り取るため、写る範囲が狭くなります。
-        これは画像を後からトリミングすることに近い考え方です。
-      </p>
-      <p>撮像フォーマットを変更しても、レンズそのものの焦点距離やF値が変化するわけではありません。</p>
-
-      <h3>F値と露出について</h3>
-      <p>F値は、レンズの焦点距離と入射瞳径の比で決まる、レンズ固有の光学的な値です。</p>
-      <p>
-        撮像フォーマットを変えてもレンズの焦点距離とF値は変わらず、同じF値とシャッター速度における単位面積当たりの露光量も、理想的には変わりません。
-      </p>
-      <p>
-        したがって、例えば「APS-CのF2.8は、露出では35mm判のF4.2に相当する」という意味ではありません。
-        APS-Cでも35mm判でも、F2.8は露出上はF2.8です。
-      </p>
-      <p>
-        ただし、大きなセンサーは受光面積が広いため、センサー全体で受け取る光の総量は多くなります。
-        これはノイズや画質の比較には関係しますが、F値そのものが変化することを意味するものではありません。
-      </p>
-      <p>
-        露出は像面照度と露光時間による単位面積当たりの量として扱われる一方、センサー全体で受ける総光量は面積に依存します。
-      </p>
-
-      <h3>被写界深度相当F値について</h3>
-      <p>
-        異なる撮像フォーマットで同じ範囲を写すには、焦点距離の異なるレンズを使用する必要があります。
-        その結果、同じ公称F値を使用しても、被写界深度やピント面前後のぼけの大きさは同じになりません。
-      </p>
-      <p>
-        このツールで表示する「被写界深度を等価にするF値」は、次の条件をそろえた場合に、被写界深度が同程度となるF値の目安です。
-      </p>
-      <ul>
-        <li>同じ画角</li>
-        <li>同じ撮影位置と被写体距離</li>
-        <li>同じ最終画像サイズ</li>
-        <li>同じ観察距離</li>
-        <li>撮像フォーマットに応じて許容錯乱円が比例すると仮定</li>
-      </ul>
-      <p>この換算F値は、露出やレンズの明るさを表す値ではありません。</p>
-      <p>
-        例えば、ある撮像フォーマットのF2.8と、別の撮像フォーマットのF5.6が被写界深度の面で等価と表示されても、F5.6を使用すれば露出はF2.8より暗くなります。
-        同じ明るさで撮影するには、シャッター速度、ISO感度、または照明で補う必要があります。
-      </p>
-
-      <h3>「等価なボケ」の範囲</h3>
-      <p>
-        このツールが比較するのは、許容錯乱円を基準とした被写界深度と、ピント面から外れた像のぼけの大きさの目安です。
-      </p>
-      <p>
-        実際のぼけの形、滑らかさ、輪郭、口径食、収差などの「ボケ味」は、レンズの光学設計や絞り形状、被写体と背景の距離によって異なるため、この計算だけでは一致しません。
-      </p>
-      <p>
-        特に重要なのは、<strong>「等価ボケ量」ではなく「被写界深度とデフォーカスぼけの大きさの目安」</strong>として扱う点です。
-        「ボケ量」だけでは、背景の距離やレンズ固有のボケ描写まで等価になるように読めてしまいます。
-      </p>
-
-      <h3>コンバーターについて</h3>
-      <p>
-        レデューサーやテレコンバーターは、撮像フォーマットの変更とは異なり、光学系そのものに作用します。
-      </p>
-      <p>
-        そのため、コンバーターを装着すると、実効焦点距離と理論上のF値が倍率に応じて変化します。
-        このツールでは、コンバーター装着後の実効焦点距離と理論F値を計算したうえで、撮像フォーマット間の画角と被写界深度を換算しています。
-      </p>
-      <p>
-        実際の撮影では、レンズやコンバーターの透過損失、周辺減光、イメージサークル、収差、機器間の互換性などにより、計算値と差が生じる場合があります。
-      </p>
+      <h3>Image format and angle of view</h3>
+      <p>A lens projects an image circle: the area where it can form a usable image. Differences between formats are mainly about which part of that image the sensor or film records.</p>
+      <p>With the same lens from the same position, a smaller format captures a smaller central crop of the image circle, so the field of view becomes narrower. This is similar to cropping an image afterward.</p>
+      <p>Changing the image format does not change the lens's actual focal length or F-number.</p>
+      <h3>F-number and exposure</h3>
+      <p>The F-number is an optical value of the lens determined by the ratio between focal length and entrance pupil diameter.</p>
+      <p>Changing the image format does not change focal length or F-number, and ideally the exposure per unit area at the same F-number and shutter speed does not change.</p>
+      <p>Therefore, “F2.8 on APS-C is equivalent to F4.2 on 35mm format for exposure” is not what this calculator means. For exposure, F2.8 is F2.8 on both formats.</p>
+      <h3>Depth-of-field equivalent F-number</h3>
+      <p>To capture the same framing on different formats, you need lenses with different focal lengths. As a result, even at the same nominal F-number, depth of field and defocus blur are not the same.</p>
+      <p>The equivalent depth-of-field F-number is an estimate when angle of view, camera position, subject distance, final image size, viewing distance, and circle-of-confusion scaling are matched.</p>
+      <p>This converted F-number does not indicate exposure or lens brightness.</p>
+      <h3>About converters</h3>
+      <p>Reducers and teleconverters act on the optical system itself. This tool first calculates effective focal length and theoretical F-number after the converter, then converts angle of view and depth of field between formats.</p>
     </div>
   </details>
 
   <section class="notes">
-    <h2>計算値の意味</h2>
+    <h2>Meaning of calculated values</h2>
     <ul>
-      <li>
-        <strong>コンバーター装着後の理論F値（露出基準）</strong>は、公称F値にコンバーター倍率を掛けた値です。
-        同じシャッター速度・ISO・被写体輝度であれば、センサーサイズにかかわらず単位面積当たりの像面照度を比較する基準になります。
-        実際の透過損失を示すT値、周辺減光、センサー全体で受ける総光量は考慮していません。
-      </li>
-      <li>
-        <strong>被写界深度相当F値</strong>は、同じ画角、同じ撮影距離、同じ最終出力サイズ・観察条件を前提とし、
-        許容錯乱円が選択した画角基準の画面寸法に比例するとして算出します。露出を示す値ではなく、
-        このF値へ実際に絞る場合は、同じ明るさにするためシャッター速度またはISOの調整が必要です。
-      </li>
-      <li>
-        <strong>35mm判換算</strong>は一般的な対角線基準です。上部で長辺・短辺基準を選んだ場合でも、
-        35mm判換算値だけは対角線基準で表示します。
-      </li>
-      <li>
-        アスペクト比が異なるフォーマット同士では、対角線・長辺・短辺の画角を同時には一致させられません。
-      </li>
-      <li>
-        一覧の寸法は公称値・有効撮像範囲・代表値を併記しています。「1/2.8型」などの型表記は撮像管由来の光学フォーマット名で、実際の対角寸法ではありません。同じ型でも製品や読出しモードで有効範囲が異なります。
-        長辺・短辺を編集できるのは「代表値」または「カスタム寸法」を選んだ場合だけです。
-      </li>
+      <li><strong>Theoretical F-number after converter (exposure basis)</strong> is the nominal F-number multiplied by the converter factor.</li>
+      <li><strong>Depth-of-field equivalent F-number</strong> assumes the same angle of view, shooting distance, final output size, and viewing conditions. It is not an exposure value.</li>
+      <li><strong>35mm equivalents</strong> use the common diagonal basis, even if long-side or short-side matching is selected above.</li>
+      <li>When aspect ratios differ, diagonal, long-side, and short-side angles of view cannot all match at the same time.</li>
+      <li>Listed dimensions combine nominal, active-area, and representative values. Editable dimensions are available only for representative or custom formats.</li>
     </ul>
   </section>
 
@@ -841,108 +766,108 @@
   const FULL_FRAME_DIAGONAL = Math.hypot(36, 24);
 
   const FORMATS = [
-    { group: '基準・中判・大判', id: 'ff35', name: '35mm ライカ判', x: 36, y: 24 },
-    { group: '基準・中判・大判', id: '645', name: 'ブローニー 6×4.5', x: 56, y: 41.5 },
-    { group: '基準・中判・大判', id: '66', name: 'ブローニー 6×6', x: 56, y: 56 },
-    { group: '基準・中判・大判', id: '67', name: 'ブローニー 6×7', x: 69, y: 56 },
-    { group: '基準・中判・大判', id: '68', name: 'ブローニー 6×8', x: 76, y: 56 },
-    { group: '基準・中判・大判', id: '69', name: 'ブローニー 6×9', x: 82.6, y: 56 },
-    { group: '基準・中判・大判', id: '4x5', name: '4×5インチ', x: 120, y: 95 },
-    { group: '基準・中判・大判', id: '5x7', name: '5×7インチ', x: 170, y: 121 },
-    { group: '基準・中判・大判', id: '8x10', name: '8×10インチ', x: 245, y: 194 },
+    { group: 'Reference, medium, and large format', id: 'ff35', name: '35mm full frame', x: 36, y: 24 },
+    { group: 'Reference, medium, and large format', id: '645', name: '120 film 6×4.5', x: 56, y: 41.5 },
+    { group: 'Reference, medium, and large format', id: '66', name: '120 film 6×6', x: 56, y: 56 },
+    { group: 'Reference, medium, and large format', id: '67', name: '120 film 6×7', x: 69, y: 56 },
+    { group: 'Reference, medium, and large format', id: '68', name: '120 film 6×8', x: 76, y: 56 },
+    { group: 'Reference, medium, and large format', id: '69', name: '120 film 6×9', x: 82.6, y: 56 },
+    { group: 'Reference, medium, and large format', id: '4x5', name: '4×5 inch', x: 120, y: 95 },
+    { group: 'Reference, medium, and large format', id: '5x7', name: '5×7 inch', x: 170, y: 121 },
+    { group: 'Reference, medium, and large format', id: '8x10', name: '8×10 inch', x: 245, y: 194 },
 
-    { group: 'フィルム・特殊フォーマット', id: 'aps-h-film', name: 'APS H', x: 30.2, y: 16.7, representative: true },
-    { group: 'フィルム・特殊フォーマット', id: 'aps-c-film', name: 'APS C', x: 25, y: 16.7, representative: true },
-    { group: 'フィルム・特殊フォーマット', id: 'aps-p-film', name: 'APS P', x: 30.2, y: 10, representative: true },
-    { group: 'フィルム・特殊フォーマット', id: '126', name: 'インスタマチック（126）', x: 28, y: 28 },
-    { group: 'フィルム・特殊フォーマット', id: '110', name: 'ポケット（110）', x: 17, y: 13 },
-    { group: 'フィルム・特殊フォーマット', id: 'disc', name: 'ディスク', x: 10, y: 8 },
-    { group: 'フィルム・特殊フォーマット', id: 'minox', name: 'ミノックス', x: 11, y: 8 },
-    { group: 'フィルム・特殊フォーマット', id: '35-pano', name: '35mm パノラマ', x: 36, y: 12 },
-    { group: 'フィルム・特殊フォーマット', id: '35-half', name: '35mm ハーフ判', x: 24, y: 17 },
-    { group: 'フィルム・特殊フォーマット', id: '35-square', name: '35mm スクエア', x: 24, y: 24 },
-    { group: 'フィルム・特殊フォーマット', id: 'mamiya-6mf', name: 'Mamiya 6MF パノラマ', x: 54, y: 24 },
-    { group: 'フィルム・特殊フォーマット', id: 'xpan', name: 'XPan／TX-1／Mamiya 7 パノラマ', x: 65, y: 24 },
+    { group: 'Film and special formats', id: 'aps-h-film', name: 'APS H', x: 30.2, y: 16.7, representative: true },
+    { group: 'Film and special formats', id: 'aps-c-film', name: 'APS C', x: 25, y: 16.7, representative: true },
+    { group: 'Film and special formats', id: 'aps-p-film', name: 'APS P', x: 30.2, y: 10, representative: true },
+    { group: 'Film and special formats', id: '126', name: 'Instamatic（126)', x: 28, y: 28 },
+    { group: 'Film and special formats', id: '110', name: 'Pocket（110)', x: 17, y: 13 },
+    { group: 'Film and special formats', id: 'disc', name: 'Disc', x: 10, y: 8 },
+    { group: 'Film and special formats', id: 'minox', name: 'Minox', x: 11, y: 8 },
+    { group: 'Film and special formats', id: '35-pano', name: '35mm Panorama', x: 36, y: 12 },
+    { group: 'Film and special formats', id: '35-half', name: '35mm Half frame', x: 24, y: 17 },
+    { group: 'Film and special formats', id: '35-square', name: '35mm Square', x: 24, y: 24 },
+    { group: 'Film and special formats', id: 'mamiya-6mf', name: 'Mamiya 6MF Panorama', x: 54, y: 24 },
+    { group: 'Film and special formats', id: 'xpan', name: 'XPan／TX-1／Mamiya 7 Panorama', x: 65, y: 24 },
 
-    { group: 'デジタルカメラ', id: 'nikon-dx', name: 'Nikon DX／Fuji S*Pro／EPSON R-D1', x: 23.7, y: 15.6, representative: true },
-    { group: 'デジタルカメラ', id: 'pentax-aps-c', name: 'Pentax DSLR APS-C', x: 23.5, y: 15.7, representative: true },
-    { group: 'デジタルカメラ', id: 'canon-aps-c', name: 'Canon EOS APS-C', x: 22.7, y: 15.1, representative: true },
-    { group: 'デジタルカメラ', id: 'canon-aps-h', name: 'Canon EOS APS-H', x: 28.7, y: 19.1, representative: true },
-    { group: 'デジタルカメラ', id: 'sigma-foveon', name: 'Sigma SD9／SD10', x: 20.7, y: 13.8 },
-    { group: 'デジタルカメラ', id: 'leica-m8', name: 'Leica M8', x: 27, y: 18 },
-    { group: 'デジタルカメラ', id: 'four-thirds', name: 'Four Thirds／Micro Four Thirds', x: 18, y: 13.5, representative: true },
-    { group: 'デジタルカメラ', id: 'gfx', name: 'Pentax 645D／Fujifilm GFX', x: 44, y: 33, representative: true },
-    { group: 'デジタルカメラ', id: 'mamiya-zd', name: 'Mamiya ZD', x: 48, y: 36 },
-    { group: 'デジタルカメラ', id: 'dcs315', name: 'Kodak DCS 315', x: 14, y: 9.3 },
-    { group: 'デジタルカメラ', id: 'dcs330', name: 'Kodak DCS 330', x: 18.1, y: 13.5 },
-    { group: 'デジタルカメラ', id: 'dcs20', name: 'Kodak DCS *20／Canon EOS D2000', x: 22.8, y: 15.5 },
-    { group: 'デジタルカメラ', id: 'dcs60', name: 'Kodak DCS *60／Canon EOS D6000', x: 27.6, y: 18.4 },
+    { group: 'Digital cameras', id: 'nikon-dx', name: 'Nikon DX／Fuji S*Pro／EPSON R-D1', x: 23.7, y: 15.6, representative: true },
+    { group: 'Digital cameras', id: 'pentax-aps-c', name: 'Pentax DSLR APS-C', x: 23.5, y: 15.7, representative: true },
+    { group: 'Digital cameras', id: 'canon-aps-c', name: 'Canon EOS APS-C', x: 22.7, y: 15.1, representative: true },
+    { group: 'Digital cameras', id: 'canon-aps-h', name: 'Canon EOS APS-H', x: 28.7, y: 19.1, representative: true },
+    { group: 'Digital cameras', id: 'sigma-foveon', name: 'Sigma SD9／SD10', x: 20.7, y: 13.8 },
+    { group: 'Digital cameras', id: 'leica-m8', name: 'Leica M8', x: 27, y: 18 },
+    { group: 'Digital cameras', id: 'four-thirds', name: 'Four Thirds／Micro Four Thirds', x: 18, y: 13.5, representative: true },
+    { group: 'Digital cameras', id: 'gfx', name: 'Pentax 645D／Fujifilm GFX', x: 44, y: 33, representative: true },
+    { group: 'Digital cameras', id: 'mamiya-zd', name: 'Mamiya ZD', x: 48, y: 36 },
+    { group: 'Digital cameras', id: 'dcs315', name: 'Kodak DCS 315', x: 14, y: 9.3 },
+    { group: 'Digital cameras', id: 'dcs330', name: 'Kodak DCS 330', x: 18.1, y: 13.5 },
+    { group: 'Digital cameras', id: 'dcs20', name: 'Kodak DCS *20／Canon EOS D2000', x: 22.8, y: 15.5 },
+    { group: 'Digital cameras', id: 'dcs60', name: 'Kodak DCS *60／Canon EOS D6000', x: 27.6, y: 18.4 },
 
-    { group: 'インスタント', id: 'joycam', name: 'ポラロイド JOYCAM', x: 73, y: 55 },
-    { group: 'インスタント', id: 'polaroid600', name: 'ポラロイド 600', x: 79, y: 78 },
-    { group: 'インスタント', id: 'spectra', name: 'ポラロイド Spectra', x: 91, y: 72 },
-    { group: 'インスタント', id: 'polaroid80', name: 'ポラロイド 80', x: 86, y: 83 },
-    { group: 'インスタント', id: 'polaroid-standard', name: 'ポラロイド スタンダード', x: 108, y: 85 },
-    { group: 'インスタント', id: 'instax-mini', name: 'チェキ mini', x: 62, y: 46 },
-    { group: 'インスタント', id: 'instax-square', name: 'チェキ square', x: 62, y: 62 },
-    { group: 'インスタント', id: 'instax-wide', name: 'チェキ wide', x: 99, y: 62 },
+    { group: 'Instant film', id: 'joycam', name: 'Polaroid JOYCAM', x: 73, y: 55 },
+    { group: 'Instant film', id: 'polaroid600', name: 'Polaroid 600', x: 79, y: 78 },
+    { group: 'Instant film', id: 'spectra', name: 'Polaroid Spectra', x: 91, y: 72 },
+    { group: 'Instant film', id: 'polaroid80', name: 'Polaroid 80', x: 86, y: 83 },
+    { group: 'Instant film', id: 'polaroid-standard', name: 'Polaroid Standard', x: 108, y: 85 },
+    { group: 'Instant film', id: 'instax-mini', name: 'Instax mini', x: 62, y: 46 },
+    { group: 'Instant film', id: 'instax-square', name: 'Instax square', x: 62, y: 62 },
+    { group: 'Instant film', id: 'instax-wide', name: 'Instax wide', x: 99, y: 62 },
 
-    { group: 'シネマ', id: 'super35', name: 'Super 35', x: 24.9, y: 18.7, representative: true },
-    { group: 'シネマ', id: 'super16', name: 'Super 16', x: 12.5, y: 7.4, representative: true },
+    { group: 'Cinema', id: 'super35', name: 'Super 35', x: 24.9, y: 18.7, representative: true },
+    { group: 'Cinema', id: 'super16', name: 'Super 16', x: 12.5, y: 7.4, representative: true },
 
-    // Raspberry Pi公式カメラ。寸法は有効撮像範囲を優先。
-    { group: '組み込み・産業用（Raspberry Pi）', id: 'ov5647', name: 'OmniVision OV5647（1/4型・Camera Module 1）', x: 3.76, y: 2.74, sizeNote: '有効撮像範囲' },
-    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx219', name: 'Sony IMX219（1/4型・Camera Module 2）', x: 3.68, y: 2.76, sizeNote: '有効撮像範囲' },
-    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx708', name: 'Sony IMX708（1/2.43型・Camera Module 3）', x: 6.45, y: 3.63, sizeNote: '有効撮像範囲' },
-    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx477', name: 'Sony IMX477（1/2.3型・HQ Camera）', x: 6.287, y: 4.712, sizeNote: '有効撮像範囲' },
-    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx500', name: 'Sony IMX500（1/2.3型・AI Camera）', x: 6.287, y: 4.712, sizeNote: '有効撮像範囲' },
-    { group: '組み込み・産業用（Raspberry Pi）', id: 'imx296', name: 'Sony IMX296（1/2.9型・Global Shutter Camera）', x: 5.02, y: 3.75, sizeNote: '有効画素域概算' },
+    // Official Raspberry Pi cameras. Dimensions prioritize active image area.
+    { group: 'Embedded and industrial (Raspberry Pi)', id: 'ov5647', name: 'OmniVision OV5647（1/4 type・Camera Module 1)', x: 3.76, y: 2.74, sizeNote: 'active image area' },
+    { group: 'Embedded and industrial (Raspberry Pi)', id: 'imx219', name: 'Sony IMX219（1/4 type・Camera Module 2)', x: 3.68, y: 2.76, sizeNote: 'active image area' },
+    { group: 'Embedded and industrial (Raspberry Pi)', id: 'imx708', name: 'Sony IMX708（1/2.43 type・Camera Module 3)', x: 6.45, y: 3.63, sizeNote: 'active image area' },
+    { group: 'Embedded and industrial (Raspberry Pi)', id: 'imx477', name: 'Sony IMX477（1/2.3 type・HQ Camera)', x: 6.287, y: 4.712, sizeNote: 'active image area' },
+    { group: 'Embedded and industrial (Raspberry Pi)', id: 'imx500', name: 'Sony IMX500（1/2.3 type・AI Camera)', x: 6.287, y: 4.712, sizeNote: 'active image area' },
+    { group: 'Embedded and industrial (Raspberry Pi)', id: 'imx296', name: 'Sony IMX296（1/2.9 type・Global Shutter Camera)', x: 5.02, y: 3.75, sizeNote: 'approx. active pixel area' },
 
-    // セキュリティ・マシンビジョン等で採用例の多い実センサー。
-    // 「有効画素域概算」は、記録画素数×画素ピッチを基準にした寸法。
-    { group: '組み込み・産業用（実センサー）', id: 'imx900', name: 'Sony IMX900（1/3.1型・Global Shutter）', x: 4.61, y: 3.46, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx179', name: 'Sony IMX179（1/3.2型）', x: 4.57, y: 3.43, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx290', name: 'Sony IMX290（1/2.8型・Full HD）', x: 5.64, y: 3.18, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx462', name: 'Sony IMX462（1/2.8型・Full HD）', x: 5.57, y: 3.13, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx178', name: 'Sony IMX178（1/1.8型・約6.4MP）', x: 7.43, y: 4.99, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx678', name: 'Sony IMX678（1/1.8型・4K）', x: 7.68, y: 4.32, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx585', name: 'Sony IMX585（1/1.2型・4K）', x: 11.14, y: 6.26, sizeNote: '有効画素域概算' },
-    { group: '組み込み・産業用（実センサー）', id: 'imx533', name: 'Sony IMX533（1型・正方形）', x: 11.31, y: 11.31, sizeNote: '有効画素域概算' },
+    // Actual sensors commonly used in security and machine-vision contexts.
+    // Approximate active pixel area is based on recorded pixels times pixel pitch.
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx900', name: 'Sony IMX900（1/3.1 type・Global Shutter)', x: 4.61, y: 3.46, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx179', name: 'Sony IMX179（1/3.2 type)', x: 4.57, y: 3.43, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx290', name: 'Sony IMX290（1/2.8 type・Full HD)', x: 5.64, y: 3.18, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx462', name: 'Sony IMX462（1/2.8 type・Full HD)', x: 5.57, y: 3.13, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx178', name: 'Sony IMX178（1/1.8 type・approx.6.4MP)', x: 7.43, y: 4.99, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx678', name: 'Sony IMX678（1/1.8 type・4K)', x: 7.68, y: 4.32, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx585', name: 'Sony IMX585（1/1.2 type・4K)', x: 11.14, y: 6.26, sizeNote: 'approx. active pixel area' },
+    { group: 'Embedded and industrial (actual sensors)', id: 'imx533', name: 'Sony IMX533（1 type・square)', x: 11.31, y: 11.31, sizeNote: 'approx. active pixel area' },
 
-    // 「型」は撮像管由来の光学フォーマット名で、実寸そのものではない。
-    // 同じ型でも製品・アスペクト比・読出しモードにより有効撮像範囲は異なる。
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-6', name: '1/6型センサー（4:3代表）', x: 2.4, y: 1.8, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-5', name: '1/5型センサー（4:3代表）', x: 2.88, y: 2.16, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-4', name: '1/4型センサー（4:3代表）', x: 3.6, y: 2.7, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-3-2', name: '1/3.2型センサー（4:3代表）', x: 4.54, y: 3.42, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-3-1', name: '1/3.1型センサー（4:3代表）', x: 4.65, y: 3.49, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-3', name: '1/3型センサー（4:3代表）', x: 4.8, y: 3.6, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-9', name: '1/2.9型センサー（4:3代表）', x: 5.04, y: 3.78, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-8', name: '1/2.8型センサー（16:9代表）', x: 5.6, y: 3.15, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-5', name: '1/2.5型センサー（4:3代表）', x: 5.76, y: 4.29, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2-3', name: '1/2.3型センサー（4:3代表）', x: 6.17, y: 4.55, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-2', name: '1/2型センサー（4:3代表）', x: 6.4, y: 4.8, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1-8', name: '1/1.8型センサー（4:3代表）', x: 7.2, y: 5.4, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1-7', name: '1/1.7型センサー（4:3代表）', x: 7.6, y: 5.7, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-2-3', name: '2/3型センサー（4:3代表）', x: 8.8, y: 6.6, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1-2', name: '1/1.2型センサー（16:9代表）', x: 11.1, y: 6.2, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1', name: '1型センサー（3:2代表）', x: 13.2, y: 8.8, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-1-1', name: '1.1型センサー（4:3代表）', x: 12.8, y: 9.6, representative: true },
-    { group: '組み込み・産業用（代表フォーマット）', id: 'type-4-3-industrial', name: '4/3型センサー（4:3代表）', x: 17.3, y: 13.0, representative: true },
+    // Optical type names come from legacy video-tube sizing and are not literal dimensions.
+    // Active areas vary by product, aspect ratio, and readout mode.
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-6', name: '1/6 type sensor（4:3 representative)', x: 2.4, y: 1.8, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-5', name: '1/5 type sensor（4:3 representative)', x: 2.88, y: 2.16, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-4', name: '1/4 type sensor（4:3 representative)', x: 3.6, y: 2.7, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-3-2', name: '1/3.2 type sensor（4:3 representative)', x: 4.54, y: 3.42, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-3-1', name: '1/3.1 type sensor（4:3 representative)', x: 4.65, y: 3.49, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-3', name: '1/3 type sensor（4:3 representative)', x: 4.8, y: 3.6, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-2-9', name: '1/2.9 type sensor（4:3 representative)', x: 5.04, y: 3.78, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-2-8', name: '1/2.8 type sensor（16:9 representative)', x: 5.6, y: 3.15, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-2-5', name: '1/2.5 type sensor（4:3 representative)', x: 5.76, y: 4.29, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-2-3', name: '1/2.3 type sensor（4:3 representative)', x: 6.17, y: 4.55, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-2', name: '1/2 type sensor（4:3 representative)', x: 6.4, y: 4.8, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-1-8', name: '1/1.8 type sensor（4:3 representative)', x: 7.2, y: 5.4, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-1-7', name: '1/1.7 type sensor（4:3 representative)', x: 7.6, y: 5.7, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-2-3', name: '2/3 type sensor（4:3 representative)', x: 8.8, y: 6.6, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-1-2', name: '1/1.2 type sensor（16:9 representative)', x: 11.1, y: 6.2, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1', name: '1 type sensor（3:2 representative)', x: 13.2, y: 8.8, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-1-1', name: '1.1 type sensor（4:3 representative)', x: 12.8, y: 9.6, representative: true },
+    { group: 'Embedded and industrial (representative formats)', id: 'type-4-3-industrial', name: '4/3 type sensor（4:3 representative)', x: 17.3, y: 13.0, representative: true },
 
-    { group: 'カスタム', id: 'custom', name: 'カスタム寸法', x: null, y: null }
+    { group: 'Custom', id: 'custom', name: 'Custom dimensions', x: null, y: null }
   ];
 
   const CONVERTERS = [
-    { id: 'none', name: '無し（1.0×）', factor: 1 },
-    { id: 'metabones-xl', name: 'Metabones XL（0.64×）', factor: 0.64 },
-    { id: 'metabones-071', name: 'Metabones（0.71×）', factor: 0.71 },
-    { id: 'fringer-fr-fx071', name: 'Fringer FR-FX071（0.74×）', factor: 0.74 },
-    { id: 'tele-14', name: 'テレコンバーター（1.4×）', factor: 1.4 },
-    { id: 'tele-16', name: 'テレコンバーター（1.6×）', factor: 1.6 },
-    { id: 'tele-20', name: 'テレコンバーター（2.0×）', factor: 2.0 },
-    { id: 'tele-30', name: 'テレコンバーター（3.0×）', factor: 3.0 },
-    { id: 'custom', name: '任意倍率', factor: null }
+    { id: 'none', name: 'None (1.0×)', factor: 1 },
+    { id: 'metabones-xl', name: 'Metabones XL（0.64×)', factor: 0.64 },
+    { id: 'metabones-071', name: 'Metabones（0.71×)', factor: 0.71 },
+    { id: 'fringer-fr-fx071', name: 'Fringer FR-FX071（0.74×)', factor: 0.74 },
+    { id: 'tele-14', name: 'Teleconverter（1.4×)', factor: 1.4 },
+    { id: 'tele-16', name: 'Teleconverter（1.6×)', factor: 1.6 },
+    { id: 'tele-20', name: 'Teleconverter（2.0×)', factor: 2.0 },
+    { id: 'tele-30', name: 'Teleconverter（3.0×)', factor: 3.0 },
+    { id: 'custom', name: 'Custom factor', factor: null }
   ];
 
   const DEFAULTS = {
@@ -1038,8 +963,8 @@
       } else {
         const sizeNote = format.sizeNote
           ? `・${format.sizeNote}`
-          : (format.representative ? '・代表値' : '');
-        option.textContent = `${format.name}（${format.x}×${format.y} mm${sizeNote}）`;
+          : (format.representative ? '・representative' : '');
+        option.textContent = `${format.name}（${format.x}×${format.y} mm${sizeNote})`;
       }
       groups.get(format.group).appendChild(option);
     }
@@ -1089,11 +1014,11 @@
 
     if (editable) {
       note.textContent = format.id === 'custom'
-        ? '長辺・短辺を入力してください。対角線は自動計算されます。'
-        : 'この項目は代表寸法です。機器の実測値・仕様値が分かる場合は修正できます。';
+        ? 'Enter the long and short sides. The diagonal is calculated automatically.'
+        : 'This item uses representative dimensions. You can adjust them if measured or specified values are available.';
     } else {
       summaryValue.textContent = Number.isFinite(diag)
-        ? `${formatPlain(x, 3)} × ${formatPlain(y, 3)} mm（対角 ${formatPlain(diag, 3)} mm）`
+        ? `${formatPlain(x, 3)} × ${formatPlain(y, 3)} mm (diagonal ${formatPlain(diag, 3)} mm)`
         : '—';
     }
   }
@@ -1128,9 +1053,9 @@
 
     if (!valid) {
       const range = Number.isFinite(max)
-        ? `${min}より大きく${max}以下`
-        : `${min}より大きい`;
-      errors.push(`${label}は${range}数値を入力してください。`);
+        ? `greater than ${min} and ${max} or less`
+        : `greater than ${min}`;
+      errors.push(`${label} must be a numeric value ${range}.`);
       return NaN;
     }
     return value;
@@ -1143,16 +1068,16 @@
       customInput.setAttribute('aria-invalid', 'false');
       return converter.factor;
     }
-    return readPositive(customInput, `${label}の任意倍率`, errors, { min: 0, max: 10 });
+    return readPositive(customInput, `${label} custom factor`, errors, { min: 0, max: 10 });
   }
 
   function stopChangeText(factor) {
     if (!Number.isFinite(factor) || factor <= 0) return '—';
     const stops = 2 * Math.log2(factor);
-    if (Math.abs(stops) < 0.005) return '変化なし（0段）';
+    if (Math.abs(stops) < 0.005) return 'No change (0 stops)';
     return stops > 0
-      ? `約${formatPlain(stops, 2)}段 暗くなる（理論値）`
-      : `約${formatPlain(Math.abs(stops), 2)}段 明るくなる（理論値）`;
+      ? `approx.${formatPlain(stops, 2)} stops darker (theoretical)`
+      : `approx.${formatPlain(Math.abs(stops), 2)} stops brighter (theoretical)`;
   }
 
   function selectedDimensionRatio(method, sx, sy, sdiag, tx, ty, tdiag) {
@@ -1162,9 +1087,9 @@
   }
 
   function methodLabel(method) {
-    if (method === 'long') return '長辺方向';
-    if (method === 'short') return '短辺方向';
-    return '対角線方向';
+    if (method === 'long') return 'Long side';
+    if (method === 'short') return 'Short side';
+    return 'Diagonal';
   }
 
   function renderMessages(errors, warnings) {
@@ -1204,19 +1129,19 @@
     const errors = [];
     const warnings = [];
 
-    const sx = readPositive(elements.sourceX, '入力側の長辺', errors);
-    const sy = readPositive(elements.sourceY, '入力側の短辺', errors);
-    const sourceFocal = readPositive(elements.sourceFocal, 'レンズ公称焦点距離', errors);
-    const sourceFStop = readPositive(elements.sourceFStop, 'レンズ公称F値', errors);
+    const sx = readPositive(elements.sourceX, 'source long side', errors);
+    const sy = readPositive(elements.sourceY, 'source short side', errors);
+    const sourceFocal = readPositive(elements.sourceFocal, 'Nominal lens focal length', errors);
+    const sourceFStop = readPositive(elements.sourceFStop, 'Nominal lens F-number', errors);
     const sourceFactor = readConverterFactor(
       elements.sourceConverter,
       elements.sourceCustomFactor,
-      '入力側コンバーター',
+      'source converter',
       errors
     );
 
-    const tx = readPositive(elements.targetX, '換算先の長辺', errors);
-    const ty = readPositive(elements.targetY, '換算先の短辺', errors);
+    const tx = readPositive(elements.targetX, 'target long side', errors);
+    const ty = readPositive(elements.targetY, 'target short side', errors);
 
     const sourceDiagonal = Number.isFinite(sx) && Number.isFinite(sy)
       ? Math.hypot(sx, sy)
@@ -1244,9 +1169,9 @@
     const aspectDifference = Math.abs(sourceAspect - targetAspect) / sourceAspect;
     if (aspectDifference > 0.01) {
       warnings.push(
-        `アスペクト比が異なります（入力 ${formatPlain(sourceAspect, 3)}:1、` +
-        `換算先 ${formatPlain(targetAspect, 3)}:1）。${methodLabel(method)}の画角だけを一致させるため、` +
-        '他方向の画角と写る範囲は一致しません。'
+        `Aspect ratios differ (source ${formatPlain(sourceAspect, 3)}:1, ` +
+        `target ${formatPlain(targetAspect, 3)}:1). Only the ${methodLabel(method)} angle of view is matched, so ` +
+        'angles of view and captured areas in other directions will not match.'
       );
     }
 
@@ -1255,9 +1180,9 @@
 
     const targetEquivalentFocal = sourceEffectiveFocal * ratio;
 
-    // 同一画角・同一撮影距離・同一出力条件で、許容錯乱円が
-    // 選択した画面寸法に比例すると仮定した被写界深度相当F値。
-    // 露出値ではないため、換算先に露出用F値は重複表示しない。
+    // Depth-of-field equivalent F-number for the same angle of view,
+    // shooting distance, and output conditions, assuming circle of confusion
+    // scales with the selected image dimension. This is not an exposure value.
     const targetDofFStop = sourceExposureFStop * ratio;
 
     const sourceCrop35 = FULL_FRAME_DIAGONAL / sourceDiagonal;
@@ -1326,7 +1251,7 @@
       url.hash = '';
       window.history.replaceState(null, '', url.toString());
     } catch (_) {
-      // file:// など、履歴APIを利用できない環境では何もしない。
+      // Do nothing in environments such as file:// where the History API is unavailable.
     }
   }
 
@@ -1334,7 +1259,7 @@
     const url = buildShareUrl();
     try {
       await navigator.clipboard.writeText(url);
-      setStatus('現在の条件を含むURLをコピーしました。');
+      setStatus('Copied the URL with the current settings.');
       return;
     } catch (_) {
       const textarea = document.createElement('textarea');
@@ -1347,8 +1272,8 @@
       const copied = document.execCommand('copy');
       textarea.remove();
       setStatus(copied
-        ? '現在の条件を含むURLをコピーしました。'
-        : 'URLをコピーできませんでした。アドレス欄からコピーしてください。');
+        ? 'Copied the URL with the current settings.'
+        : 'Could not copy the URL. Please copy it from the address bar.');
     }
   }
 
@@ -1396,7 +1321,7 @@
 
   function reset() {
     setState(DEFAULTS);
-    setStatus('初期値に戻しました。');
+    setStatus('Reset to defaults.');
   }
 
   function numberParam(params, key, fallback) {
