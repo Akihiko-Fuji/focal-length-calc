@@ -46,6 +46,18 @@
 
     * { box-sizing: border-box; }
 
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
@@ -401,6 +413,86 @@
       font-size: 0.9rem;
     }
 
+    .crop-visual {
+      margin-top: 18px;
+      padding: 18px;
+    }
+
+    .crop-visual-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 14px;
+    }
+
+    .crop-visual-header p { margin: 4px 0 0; color: var(--muted); }
+
+    .lens-constants {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      color: var(--accent-strong);
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .crop-stage {
+      position: relative;
+      width: min(100%, 760px);
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #07111b;
+    }
+
+    .crop-stage svg { display: block; width: 100%; height: auto; }
+    .crop-stage text { font-family: inherit; }
+
+    .crop-diagram-note {
+      width: min(100%, 760px);
+      margin: 10px auto 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .crop-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 18px;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .legend-swatch {
+      display: inline-block;
+      width: 1.15rem;
+      height: 0.72rem;
+      margin-right: 6px;
+      border: 3px solid;
+      vertical-align: -0.05rem;
+    }
+
+    .legend-source { border-color: #ffd54f; }
+    .legend-target { border-color: #55d6ff; }
+
+    .crop-explanation {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .crop-explanation p {
+      margin: 0;
+      padding: 10px 12px;
+      border-left: 4px solid var(--accent);
+      background: var(--readonly-bg);
+    }
+
     .notes {
       margin-top: 18px;
       padding: 14px 18px;
@@ -486,6 +578,10 @@
       .result-card output { font-size: clamp(1.48rem, 8vw, 2rem); }
       .small-note { font-size: 0.8rem; }
       .status { text-align: left; }
+      .crop-visual { padding: 12px; }
+      .crop-visual-header { display: block; }
+      .lens-constants { display: inline-block; margin-top: 9px; white-space: normal; }
+      .crop-explanation { grid-template-columns: 1fr; }
     }
 
     /* 水色のパネル見出しは、ダークモードでも黒文字で可読性を確保。
@@ -723,6 +819,56 @@
 
   <p id="status" class="status" aria-live="polite"></p>
 
+  <section class="notes crop-visual" aria-labelledby="cropVisualTitle">
+    <div class="crop-visual-header">
+      <div>
+        <h2 id="cropVisualTitle">同じレンズ、異なる記録範囲</h2>
+        <p>レンズが結ぶ像は同じまま。フォーマットごとに、その中から記録する範囲だけが変わります。</p>
+      </div>
+      <div id="lensConstants" class="lens-constants">レンズ 50 mm / F2.8 は不変</div>
+    </div>
+
+    <div class="crop-stage">
+      <svg viewBox="0 0 760 430" role="img" aria-labelledby="cropSvgTitle cropSvgDesc">
+        <title id="cropSvgTitle">共通の模式的な像と二つの撮像フォーマットの比較</title>
+        <desc id="cropSvgDesc">大きい方の選択フォーマットを包含するよう正規化した共通の模式的な像に、入力側と換算先の記録範囲を同じ縮尺で重ねて表示します。実際のレンズのカバー範囲を示す図ではありません。</desc>
+        <defs>
+          <clipPath id="imageCircleClip"><circle cx="380" cy="206" r="174" /></clipPath>
+          <linearGradient id="skyGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3f6fa5" /><stop offset="1" stop-color="#efbd73" />
+          </linearGradient>
+        </defs>
+        <g clip-path="url(#imageCircleClip)">
+          <rect x="206" y="32" width="348" height="348" fill="url(#skyGradient)" />
+          <circle cx="450" cy="130" r="22" fill="#ff7043" />
+          <path d="M190 245 L300 170 L390 238 L476 174 L570 242 V390 H190Z" fill="#168f55" />
+          <path d="M190 330 Q380 215 570 330 V400 H190Z" fill="#1769aa" />
+          <g stroke="#fff" stroke-opacity=".09">
+            <path d="M230 20V390M280 20V390M330 20V390M380 20V390M430 20V390M480 20V390M530 20V390" />
+            <path d="M190 80H570M190 130H570M190 180H570M190 230H570M190 280H570M190 330H570" />
+          </g>
+        </g>
+        <circle cx="380" cy="206" r="174" fill="none" stroke="#8195ad" stroke-width="2" />
+        <text x="380" y="24" fill="#dce7f5" font-size="14" text-anchor="middle">レンズが結ぶ共通の像（模式図）</text>
+        <rect id="sourceCropRect" fill="none" stroke="#ffd54f" stroke-width="4" />
+        <rect id="targetCropRect" fill="none" stroke="#55d6ff" stroke-width="4" stroke-dasharray="9 6" />
+        <g id="sourceCropLabel"><rect rx="4" fill="#17191c" opacity=".9" /><text fill="#ffd54f" font-size="13" font-weight="700" /></g>
+        <g id="targetCropLabel"><rect rx="4" fill="#17191c" opacity=".9" /><text fill="#55d6ff" font-size="13" font-weight="700" /></g>
+        <text id="cropRatioText" x="380" y="414" fill="#fff" font-size="15" font-weight="700" text-anchor="middle"></text>
+      </svg>
+    </div>
+    <p class="crop-diagram-note">選択した2つのフォーマットのうち、対角寸法が大きい方を包含する円を基準に表示しています。実際のレンズのイメージサークル径やカバー可否を示すものではありません。</p>
+    <div class="crop-legend" aria-hidden="true">
+      <span><i class="legend-swatch legend-source"></i>入力条件</span>
+      <span><i class="legend-swatch legend-target"></i>換算先（破線）</span>
+    </div>
+    <p id="cropAccessibleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
+    <div class="crop-explanation">
+      <p><strong>① レンズは同じ</strong><br>装着先が変わっても、公称焦点距離とF値そのものは変化しません。</p>
+      <p><strong>② 違うのは切り取り範囲</strong><br>小さいフォーマットほど、同じイメージの中央を狭く記録します。</p>
+    </div>
+  </section>
+
 
   <details class="notes philosophy">
     <summary>このツールの考え方</summary>
@@ -834,6 +980,7 @@
   </footer>
 </main>
 
+<script src="visualization-geometry.js"></script>
 <script>
 (() => {
   'use strict';
@@ -984,6 +1131,13 @@
     targetSizeSummaryValue: $('targetSizeSummaryValue'),
     targetDimensionEditor: $('targetDimensionEditor'),
     targetDimensionNote: $('targetDimensionNote'),
+    lensConstants: $('lensConstants'),
+    sourceCropRect: $('sourceCropRect'),
+    targetCropRect: $('targetCropRect'),
+    sourceCropLabel: $('sourceCropLabel'),
+    targetCropLabel: $('targetCropLabel'),
+    cropRatioText: $('cropRatioText'),
+    cropAccessibleSummary: $('cropAccessibleSummary'),
     messages: $('messages'),
     status: $('status')
   };
@@ -1167,6 +1321,94 @@
     return '対角線方向';
   }
 
+  function setCropLabel(group, text, x, y) {
+    const textNode = group.querySelector('text');
+    const background = group.querySelector('rect');
+    const labelWidth = Math.min(260, Math.max(92, text.length * 12));
+
+    group.setAttribute('transform', `translate(${x} ${y})`);
+    background.setAttribute('x', 0);
+    background.setAttribute('y', 0);
+    background.setAttribute('width', labelWidth);
+    background.setAttribute('height', 25);
+    textNode.setAttribute('x', 7);
+    textNode.setAttribute('y', 17);
+    textNode.textContent = text;
+  }
+
+  function updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop) {
+    const geometry = CropVisualization.computeCropGeometry(sx, sy, tx, ty);
+    if (!geometry) {
+      clearCropVisual();
+      return;
+    }
+
+    const { sourceDiagonal, targetDiagonal, scale } = geometry;
+    const centerX = 380;
+    const centerY = 206;
+    const sourceWidth = sx * scale;
+    const sourceHeight = sy * scale;
+    const targetWidth = tx * scale;
+    const targetHeight = ty * scale;
+    const sourceName = getFormat(elements.sourceFormat.value).name;
+    const targetName = getFormat(elements.targetFormat.value).name;
+
+    elements.sourceCropRect.setAttribute('x', centerX - sourceWidth / 2);
+    elements.sourceCropRect.setAttribute('y', centerY - sourceHeight / 2);
+    elements.sourceCropRect.setAttribute('width', sourceWidth);
+    elements.sourceCropRect.setAttribute('height', sourceHeight);
+    elements.targetCropRect.setAttribute('x', centerX - targetWidth / 2);
+    elements.targetCropRect.setAttribute('y', centerY - targetHeight / 2);
+    elements.targetCropRect.setAttribute('width', targetWidth);
+    elements.targetCropRect.setAttribute('height', targetHeight);
+
+    setCropLabel(
+      elements.sourceCropLabel,
+      `入力：${sourceName}`,
+      Math.max(212, centerX - sourceWidth / 2),
+      Math.max(39, centerY - sourceHeight / 2 - 29)
+    );
+    setCropLabel(
+      elements.targetCropLabel,
+      `換算先：${targetName}`,
+      Math.max(212, centerX - targetWidth / 2),
+      Math.min(373, centerY + targetHeight / 2 + 5)
+    );
+
+    elements.lensConstants.textContent =
+      `レンズ ${formatPlain(sourceFocal, 2)} mm / F${formatPlain(sourceFStop, 2)} は不変`;
+    elements.cropRatioText.textContent =
+      `換算先の記録範囲（対角）は入力の ${formatPlain(targetDiagonal / sourceDiagonal, 2)}×`;
+    elements.cropAccessibleSummary.textContent =
+      `クロップ比較を更新しました。黄色の実線は入力条件の${sourceName}、` +
+      `水色の破線は換算先の${targetName}です。` +
+      `入力レンズの公称値は${formatPlain(sourceFocal, 2)}ミリ、` +
+      `F${formatPlain(sourceFStop, 2)}で、記録フォーマットを変えても変化しません。` +
+      `換算先の対角記録範囲は入力の${formatPlain(targetDiagonal / sourceDiagonal, 2)}倍です。`;
+  }
+
+  function clearCropVisual() {
+    [
+      elements.sourceCropRect,
+      elements.targetCropRect,
+      elements.sourceCropLabel,
+      elements.targetCropLabel
+    ].forEach(element => element.setAttribute('visibility', 'hidden'));
+    elements.cropRatioText.textContent = '';
+    elements.lensConstants.textContent = 'レンズの値を入力してください';
+    elements.cropAccessibleSummary.textContent =
+      '入力値が正しくないため、クロップ比較を表示していません。';
+  }
+
+  function showCropVisual() {
+    [
+      elements.sourceCropRect,
+      elements.targetCropRect,
+      elements.sourceCropLabel,
+      elements.targetCropLabel
+    ].forEach(element => element.removeAttribute('visibility'));
+  }
+
   function renderMessages(errors, warnings) {
     elements.messages.textContent = '';
 
@@ -1229,10 +1471,14 @@
     elements.targetDiagonal.value = formatPlain(targetDiagonal, 3);
 
     if (errors.length) {
+      clearCropVisual();
       clearOutputs();
       renderMessages(errors, warnings);
       return;
     }
+
+    showCropVisual();
+    updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop);
 
     const method = elements.calcMethod.value;
     const ratio = selectedDimensionRatio(
