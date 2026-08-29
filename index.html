@@ -438,6 +438,13 @@
     .crop-stage svg { display: block; width: 100%; height: auto; }
     .crop-stage text { font-family: inherit; }
 
+    .crop-diagram-note {
+      width: min(100%, 760px);
+      margin: 10px auto 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
     .crop-legend {
       display: flex;
       flex-wrap: wrap;
@@ -811,8 +818,8 @@
 
     <div class="crop-stage">
       <svg viewBox="0 0 760 430" role="img" aria-labelledby="cropSvgTitle cropSvgDesc">
-        <title id="cropSvgTitle">イメージサークルと二つの撮像フォーマットの比較</title>
-        <desc id="cropSvgDesc">同じ風景が投影された円形のイメージサークル上に、入力側と換算先の記録範囲を重ねて表示します。</desc>
+        <title id="cropSvgTitle">共通の模式的な像と二つの撮像フォーマットの比較</title>
+        <desc id="cropSvgDesc">大きい方の選択フォーマットを包含するよう正規化した共通の模式的な像に、入力側と換算先の記録範囲を同じ縮尺で重ねて表示します。実際のレンズのカバー範囲を示す図ではありません。</desc>
         <defs>
           <clipPath id="imageCircleClip"><circle cx="380" cy="206" r="174" /></clipPath>
           <linearGradient id="skyGradient" x1="0" y1="0" x2="0" y2="1">
@@ -830,7 +837,7 @@
           </g>
         </g>
         <circle cx="380" cy="206" r="174" fill="none" stroke="#8195ad" stroke-width="2" />
-        <text x="380" y="24" fill="#dce7f5" font-size="14" text-anchor="middle">レンズのイメージサークル（変化しない）</text>
+        <text x="380" y="24" fill="#dce7f5" font-size="14" text-anchor="middle">レンズが結ぶ共通の像（模式図）</text>
         <rect id="sourceCropRect" fill="none" stroke="#ffd54f" stroke-width="4" />
         <rect id="targetCropRect" fill="none" stroke="#55d6ff" stroke-width="4" stroke-dasharray="9 6" />
         <g id="sourceCropLabel"><rect rx="4" fill="#17191c" opacity=".9" /><text fill="#ffd54f" font-size="13" font-weight="700" /></g>
@@ -838,6 +845,7 @@
         <text id="cropRatioText" x="380" y="414" fill="#fff" font-size="15" font-weight="700" text-anchor="middle"></text>
       </svg>
     </div>
+    <p class="crop-diagram-note">選択した2つのフォーマットのうち、対角寸法が大きい方を包含する円を基準に表示しています。実際のレンズのイメージサークル径やカバー可否を示すものではありません。</p>
     <div class="crop-legend" aria-hidden="true">
       <span><i class="legend-swatch legend-source"></i>入力条件</span>
       <span><i class="legend-swatch legend-target"></i>換算先（破線）</span>
@@ -959,6 +967,7 @@
   </footer>
 </main>
 
+<script src="visualization-geometry.js"></script>
 <script>
 (() => {
   'use strict';
@@ -1314,12 +1323,13 @@
   }
 
   function updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop) {
-    const values = [sx, sy, tx, ty];
-    if (!values.every(value => Number.isFinite(value) && value > 0)) return;
+    const geometry = CropVisualization.computeCropGeometry(sx, sy, tx, ty);
+    if (!geometry) {
+      clearCropVisual();
+      return;
+    }
 
-    const sourceDiagonal = Math.hypot(sx, sy);
-    const targetDiagonal = Math.hypot(tx, ty);
-    const scale = 300 / Math.max(sourceDiagonal, targetDiagonal);
+    const { sourceDiagonal, targetDiagonal, scale } = geometry;
     const centerX = 380;
     const centerY = 206;
     const sourceWidth = sx * scale;
@@ -1355,6 +1365,26 @@
       `レンズ ${formatPlain(sourceFocal, 2)} mm / F${formatPlain(sourceFStop, 2)} は不変`;
     elements.cropRatioText.textContent =
       `換算先の記録範囲（対角）は入力の ${formatPlain(targetDiagonal / sourceDiagonal, 2)}×`;
+  }
+
+  function clearCropVisual() {
+    [
+      elements.sourceCropRect,
+      elements.targetCropRect,
+      elements.sourceCropLabel,
+      elements.targetCropLabel
+    ].forEach(element => element.setAttribute('visibility', 'hidden'));
+    elements.cropRatioText.textContent = '';
+    elements.lensConstants.textContent = 'レンズの値を入力してください';
+  }
+
+  function showCropVisual() {
+    [
+      elements.sourceCropRect,
+      elements.targetCropRect,
+      elements.sourceCropLabel,
+      elements.targetCropLabel
+    ].forEach(element => element.removeAttribute('visibility'));
   }
 
   function renderMessages(errors, warnings) {
@@ -1418,13 +1448,15 @@
     elements.sourceDiagonal.value = formatPlain(sourceDiagonal, 3);
     elements.targetDiagonal.value = formatPlain(targetDiagonal, 3);
 
-    updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop);
-
     if (errors.length) {
+      clearCropVisual();
       clearOutputs();
       renderMessages(errors, warnings);
       return;
     }
+
+    showCropVisual();
+    updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop);
 
     const method = elements.calcMethod.value;
     const ratio = selectedDimensionRatio(
