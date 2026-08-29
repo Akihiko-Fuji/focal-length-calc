@@ -840,9 +840,11 @@
         </defs>
         <g clip-path="url(#imageCircleClip)">
           <rect x="206" y="32" width="348" height="348" fill="url(#skyGradient)" />
-          <circle cx="450" cy="130" r="22" fill="#ff7043" />
-          <path d="M190 245 L300 170 L390 238 L476 174 L570 242 V390 H190Z" fill="#168f55" />
-          <path d="M190 330 Q380 215 570 330 V400 H190Z" fill="#1769aa" />
+          <g id="sceneFocalLayer">
+            <circle cx="450" cy="130" r="22" fill="#ff7043" />
+            <path d="M-220 335 L40 190 L170 255 L300 170 L390 238 L476 174 L570 242 L700 165 L980 335 V700 H-220Z" fill="#168f55" />
+            <path d="M-220 420 Q380 180 980 420 V700 H-220Z" fill="#1769aa" />
+          </g>
           <g stroke="#fff" stroke-opacity=".09">
             <path d="M230 20V390M280 20V390M330 20V390M380 20V390M430 20V390M480 20V390M530 20V390" />
             <path d="M190 80H570M190 130H570M190 180H570M190 230H570M190 280H570M190 330H570" />
@@ -857,7 +859,7 @@
         <text id="cropRatioText" x="380" y="414" fill="#fff" font-size="15" font-weight="700" text-anchor="middle"></text>
       </svg>
     </div>
-    <p class="crop-diagram-note">選択した2つのフォーマットのうち、対角寸法が大きい方を包含する円を基準に表示しています。実際のレンズのイメージサークル径やカバー可否を示すものではありません。</p>
+    <p class="crop-diagram-note">選択した2つのフォーマットのうち、対角寸法が大きい方を包含する円を基準に表示しています。背景の景色は実効焦点距離に応じて模式的に拡大・縮小します。実際のレンズのイメージサークル径やカバー可否を示すものではありません。</p>
     <div class="crop-legend" aria-hidden="true">
       <span><i class="legend-swatch legend-source"></i>入力条件</span>
       <span><i class="legend-swatch legend-target"></i>換算先（破線）</span>
@@ -1137,6 +1139,7 @@
     sourceCropLabel: $('sourceCropLabel'),
     targetCropLabel: $('targetCropLabel'),
     cropRatioText: $('cropRatioText'),
+    sceneFocalLayer: $('sceneFocalLayer'),
     cropAccessibleSummary: $('cropAccessibleSummary'),
     messages: $('messages'),
     status: $('status')
@@ -1336,9 +1339,11 @@
     textNode.textContent = text;
   }
 
-  function updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop) {
+  function updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop, sourceFactor) {
     const geometry = CropVisualization.computeCropGeometry(sx, sy, tx, ty);
-    if (!geometry) {
+    const effectiveFocal = sourceFocal * sourceFactor;
+    const sceneScale = CropVisualization.computeSceneScale(effectiveFocal);
+    if (!geometry || !sceneScale) {
       clearCropVisual();
       return;
     }
@@ -1361,6 +1366,10 @@
     elements.targetCropRect.setAttribute('y', centerY - targetHeight / 2);
     elements.targetCropRect.setAttribute('width', targetWidth);
     elements.targetCropRect.setAttribute('height', targetHeight);
+    elements.sceneFocalLayer.setAttribute(
+      'transform',
+      `translate(${centerX} ${centerY}) scale(${sceneScale}) translate(${-centerX} ${-centerY})`
+    );
 
     setCropLabel(
       elements.sourceCropLabel,
@@ -1384,6 +1393,7 @@
       `水色の破線は換算先の${targetName}です。` +
       `入力レンズの公称値は${formatPlain(sourceFocal, 2)}ミリ、` +
       `F${formatPlain(sourceFStop, 2)}で、記録フォーマットを変えても変化しません。` +
+      `背景の景色は実効焦点距離${formatPlain(effectiveFocal, 2)}ミリに応じて模式的に表示しています。` +
       `換算先の対角記録範囲は入力の${formatPlain(targetDiagonal / sourceDiagonal, 2)}倍です。`;
   }
 
@@ -1394,6 +1404,7 @@
       elements.sourceCropLabel,
       elements.targetCropLabel
     ].forEach(element => element.setAttribute('visibility', 'hidden'));
+    elements.sceneFocalLayer.removeAttribute('transform');
     elements.cropRatioText.textContent = '';
     elements.lensConstants.textContent = 'レンズの値を入力してください';
     elements.cropAccessibleSummary.textContent =
@@ -1478,7 +1489,7 @@
     }
 
     showCropVisual();
-    updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop);
+    updateCropVisual(sx, sy, tx, ty, sourceFocal, sourceFStop, sourceFactor);
 
     const method = elements.calcMethod.value;
     const ratio = selectedDimensionRatio(
