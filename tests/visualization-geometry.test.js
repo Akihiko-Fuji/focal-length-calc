@@ -2,7 +2,10 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { computeCropGeometry } = require('../visualization-geometry.js');
+const {
+  computeCropGeometry,
+  computeSceneScale
+} = require('../visualization-geometry.js');
 
 test('equal formats produce coincident rectangles', () => {
   const result = computeCropGeometry(36, 24, 36, 24);
@@ -34,6 +37,19 @@ test('invalid custom dimensions do not produce visualization geometry', () => {
   assert.equal(computeCropGeometry(36, NaN, 18, 13.5), null);
 });
 
+test('focal length changes only the schematic scenery scale', () => {
+  assert.equal(computeSceneScale(50), 1);
+  assert.ok(computeSceneScale(25) < computeSceneScale(50));
+  assert.ok(computeSceneScale(100) > computeSceneScale(50));
+});
+
+test('scene scale remains legible across extreme focal lengths', () => {
+  assert.equal(computeSceneScale(0.1), 0.45);
+  assert.equal(computeSceneScale(10000), 2.75);
+  assert.equal(computeSceneScale(0), null);
+  assert.equal(computeSceneScale(NaN), null);
+});
+
 test('invalid focal length and F-stop trigger the page clear path', () => {
   const fs = require('node:fs');
   const page = fs.readFileSync(require.resolve('../index.html'), 'utf8');
@@ -52,4 +68,12 @@ test('dynamic crop values are exposed through an atomic polite live region', () 
   assert.match(page, /黄色の実線は入力条件の\$\{sourceName\}/);
   assert.match(page, /水色の破線は換算先の\$\{targetName\}/);
   assert.match(page, /入力値が正しくないため、クロップ比較を表示していません。/);
+});
+
+test('scene artwork responds to effective focal length without changing crop geometry', () => {
+  const fs = require('node:fs');
+  const page = fs.readFileSync(require.resolve('../index.html'), 'utf8');
+  assert.match(page, /id="sceneFocalLayer"/);
+  assert.match(page, /computeSceneScale\(effectiveFocal\)/);
+  assert.match(page, /updateCropVisual\(sx, sy, tx, ty, sourceFocal, sourceFStop, sourceFactor\)/);
 });

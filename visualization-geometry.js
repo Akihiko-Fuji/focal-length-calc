@@ -33,5 +33,20 @@
     };
   }
 
-  return { computeCropGeometry };
+  function computeSceneScale(effectiveFocal) {
+    if (!Number.isFinite(effectiveFocal) || effectiveFocal <= 0) {
+      return null;
+    }
+
+    // Compress the very wide supported focal-length range into a legible schematic cue.
+    // This affects only the scenery; sensor rectangles keep their physical size ratio.
+    const referenceFocal = 50;
+    const minimumScale = 0.45;
+    const maximumScale = 2.75;
+    const perceptualScale = Math.sqrt(effectiveFocal / referenceFocal);
+
+    return Math.min(maximumScale, Math.max(minimumScale, perceptualScale));
+  }
+
+  return { computeCropGeometry, computeSceneScale };
 });
