@@ -41,3 +41,15 @@ test('invalid focal length and F-stop trigger the page clear path', () => {
   assert.match(page, invalidBranch);
   assert.match(page, /elements\.lensConstants\.textContent = 'レンズの値を入力してください'/);
 });
+
+test('dynamic crop values are exposed through an atomic polite live region', () => {
+  const fs = require('node:fs');
+  const page = fs.readFileSync(require.resolve('../index.html'), 'utf8');
+  assert.match(
+    page,
+    /id="cropAccessibleSummary"[^>]*aria-live="polite"[^>]*aria-atomic="true"/
+  );
+  assert.match(page, /黄色の実線は入力条件の\$\{sourceName\}/);
+  assert.match(page, /水色の破線は換算先の\$\{targetName\}/);
+  assert.match(page, /入力値が正しくないため、クロップ比較を表示していません。/);
+});

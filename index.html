@@ -46,6 +46,18 @@
 
     * { box-sizing: border-box; }
 
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
@@ -850,6 +862,7 @@
       <span><i class="legend-swatch legend-source"></i>入力条件</span>
       <span><i class="legend-swatch legend-target"></i>換算先（破線）</span>
     </div>
+    <p id="cropAccessibleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
     <div class="crop-explanation">
       <p><strong>① レンズは同じ</strong><br>装着先が変わっても、公称焦点距離とF値そのものは変化しません。</p>
       <p><strong>② 違うのは切り取り範囲</strong><br>小さいフォーマットほど、同じイメージの中央を狭く記録します。</p>
@@ -1124,6 +1137,7 @@
     sourceCropLabel: $('sourceCropLabel'),
     targetCropLabel: $('targetCropLabel'),
     cropRatioText: $('cropRatioText'),
+    cropAccessibleSummary: $('cropAccessibleSummary'),
     messages: $('messages'),
     status: $('status')
   };
@@ -1365,6 +1379,12 @@
       `レンズ ${formatPlain(sourceFocal, 2)} mm / F${formatPlain(sourceFStop, 2)} は不変`;
     elements.cropRatioText.textContent =
       `換算先の記録範囲（対角）は入力の ${formatPlain(targetDiagonal / sourceDiagonal, 2)}×`;
+    elements.cropAccessibleSummary.textContent =
+      `クロップ比較を更新しました。黄色の実線は入力条件の${sourceName}、` +
+      `水色の破線は換算先の${targetName}です。` +
+      `入力レンズの公称値は${formatPlain(sourceFocal, 2)}ミリ、` +
+      `F${formatPlain(sourceFStop, 2)}で、記録フォーマットを変えても変化しません。` +
+      `換算先の対角記録範囲は入力の${formatPlain(targetDiagonal / sourceDiagonal, 2)}倍です。`;
   }
 
   function clearCropVisual() {
@@ -1376,6 +1396,8 @@
     ].forEach(element => element.setAttribute('visibility', 'hidden'));
     elements.cropRatioText.textContent = '';
     elements.lensConstants.textContent = 'レンズの値を入力してください';
+    elements.cropAccessibleSummary.textContent =
+      '入力値が正しくないため、クロップ比較を表示していません。';
   }
 
   function showCropVisual() {
